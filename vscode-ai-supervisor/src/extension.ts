@@ -65,14 +65,31 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         //     sensitivity: config.get('monitoring.sensitivity', 'medium')
         // });
 
+        // Initialize change storage service
+        const { ChangeStorageService } = await import('./services/ChangeStorageService');
+        const changeStorage = ChangeStorageService.getInstance(context);
+
         // Initialize file watcher for monitoring workspace changes
         extContext.fileWatcher = new FileWatcher(context);
+
+        // Connect file watcher to change storage
+        extContext.fileWatcher.onDidChangeFile((changeEvent) => {
+            // Store the change if it's likely AI-generated
+            if (changeEvent.aiLikelihood.isLikelyAI) {
+                changeStorage.recordFileChange(
+                    changeEvent.uri,
+                    changeEvent.beforeContent || '',
+                    changeEvent.afterContent || '',
+                    changeEvent.type
+                );
+            }
+        });
 
         // Initialize AI tool detector
         extContext.aiDetector = new AIDetector();
 
         // Initialize alert manager
-        extContext.alertManager = new AlertManager();
+        extContext.alertManager = new AlertManager(context);
 
         console.log('Core services initialized successfully');
     } catch (error) {
@@ -89,7 +106,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     registerWebviewProviders(context);
 
     // Set up context keys for when clauses
-    await vscode.commands.executeCommand('setContext', 'aiSupervisor.monitoring.active', monitoringActive);
+    await vscode.commands.executeCommand('setContext', 'aiSupervisor.monitoring.active', extContext.isMonitoringActive());
 
     // Show welcome message on first activation
     const isFirstActivation = context.globalState.get<boolean>('aiSupervisor.firstActivation', true);
@@ -121,7 +138,13 @@ function registerCommands(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('aiSupervisor.clearHistory', () => commands.clearHistory()),
         vscode.commands.registerCommand('aiSupervisor.exportReport', () => commands.exportReport()),
         vscode.commands.registerCommand('aiSupervisor.openSettings', () => commands.openSettings()),
-        vscode.commands.registerCommand('aiSupervisor.activatePremium', () => commands.activatePremium())
+        vscode.commands.registerCommand('aiSupervisor.activatePremium', () => commands.activatePremium()),
+        vscode.commands.registerCommand('aiSupervisor.showAlertHistory', async () => {
+            const alertManager = ExtensionContext.getInstance().alertManager;
+            if (alertManager) {
+                await alertManager.showAlertHistoryQuickPick();
+            }
+        })
     );
 
     console.log('Commands registered successfully');
@@ -130,7 +153,7 @@ function registerCommands(context: vscode.ExtensionContext): void {
 /**
  * Register webview panel providers
  */
-function registerWebviewProviders(context: vscode.ExtensionContext): void {
+function registerWebviewProviders(_context: vscode.ExtensionContext): void {
     // Activity Monitor Panel is created on-demand via command
     // Goal Manager Panel is created on-demand via command
     // Change Inspector Panel is created on-demand via command
@@ -141,7 +164,7 @@ function registerWebviewProviders(context: vscode.ExtensionContext): void {
 /**
  * Show welcome message on first activation
  */
-async function showWelcomeMessage(context: vscode.ExtensionContext): Promise<void> {
+async function showWelcomeMessage(_context: vscode.ExtensionContext): Promise<void> {
     const message = 'Welcome to AI Supervisor! Monitor and control AI code changes in real-time.';
     const action = await vscode.window.showInformationMessage(
         message,
@@ -188,6 +211,9 @@ export function deactivate(): void {
 
     // Clean up file watcher
     extContext.fileWatcher?.dispose();
+
+    // Clean up alert manager
+    extContext.alertManager?.dispose();
 
     // Clean up any active panels
     ActivityMonitorPanel.dispose();

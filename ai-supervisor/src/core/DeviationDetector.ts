@@ -7,9 +7,7 @@ import {
   DetectionContext,
   DetectionRule,
   DetectionStrategy,
-  ProjectScope,
 } from '../types';
-import { CodeDiffer } from '../analysis/CodeDiffer';
 import { ReversalDetector } from '../analysis/ReversalDetector';
 import { ScopeValidator } from '../analysis/ScopeValidator';
 import { SupervisorDatabase } from '../storage/Database';
@@ -49,7 +47,6 @@ import { SupervisorDatabase } from '../storage/Database';
 export class DeviationDetector extends EventEmitter {
   private db: SupervisorDatabase;
   private config: DeviationDetectorConfig;
-  private codeDiffer: CodeDiffer;
   private reversalDetector: ReversalDetector;
   private scopeValidator: ScopeValidator;
   private customStrategies: Map<string, DetectionStrategy>;
@@ -105,11 +102,10 @@ export class DeviationDetector extends EventEmitter {
       emitEvents: config.emitEvents ?? true,
     };
 
-    this.codeDiffer = new CodeDiffer();
     this.reversalDetector = new ReversalDetector(this.config.reversalDetection);
     this.scopeValidator = new ScopeValidator(this.config.scopeValidation);
     this.customStrategies = new Map();
-    this.customRules = this.config.customRules;
+    this.customRules = this.config.customRules ?? [];
 
     this.performanceMetrics = {
       totalAnalyses: 0,

@@ -1,4 +1,4 @@
-import { ProjectScope, CodeChange, Deviation, DeviationType, ScopeValidationConfig, PathMatcher, DetectionContext } from '../types';
+import { ProjectScope, CodeChange, Deviation, DeviationType, ScopeValidationConfig } from '../types';
 
 /**
  * ScopeValidator - Validates that code changes align with defined goals and scope

@@ -1,5 +1,3 @@
-import { EventEmitter } from 'events';
-
 /**
  * Represents a code change with before/after content
  */
@@ -271,13 +269,13 @@ export interface Goal {
   /** Scope */
   scope: string[];
   /** Goal status */
-  status: 'active' | 'completed' | 'deferred' | 'cancelled';
+  status: 'active' | 'completed' | 'archived' | 'abandoned';
   /** Priority level */
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  priority: number;
   /** Timestamp when goal was created */
-  createdAt: Date;
+  createdAt: string;
   /** Timestamp when goal was last updated */
-  updatedAt: Date;
+  updatedAt: string;
 }
 
 /**
@@ -308,4 +306,24 @@ export interface ModelSwitchSummary {
   sourceModel?: string;
   /** Target model (optional) */
   targetModel?: string;
+}
+
+/**
+ * Configuration for the Supervisor system
+ */
+export interface SupervisorConfig {
+  /** Path to the database file */
+  databasePath?: string;
+  /** Enable code reversal detection */
+  enableCodeReversalDetection?: boolean;
+  /** Enable scope validation */
+  enableScopeValidation?: boolean;
+  /** Enable unauthorized action prevention */
+  enableUnauthorizedActionPrevention?: boolean;
+  /** Maximum conversation history to keep */
+  maxConversationHistory?: number;
+  /** Days to retain data */
+  retentionDays?: number;
+  /** Intervention threshold level */
+  interventionThreshold?: 'low' | 'medium' | 'high';
 }

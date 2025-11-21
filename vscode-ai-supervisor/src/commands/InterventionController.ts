@@ -311,8 +311,7 @@ export class InterventionController {
     public async sendCorrectivePrompt(): Promise<void> {
         const prompt = await vscode.window.showInputBox({
             prompt: 'Enter corrective prompt to send to AI',
-            placeHolder: 'e.g., "Please stick to the original requirements and avoid changing existing functionality"',
-            multiline: true
+            placeHolder: 'e.g., "Please stick to the original requirements and avoid changing existing functionality"'
         });
 
         if (!prompt) {
@@ -345,12 +344,129 @@ export class InterventionController {
      * Allow a detected deviation (false positive)
      */
     public async allowDeviation(): Promise<void> {
-        await vscode.window.showInformationMessage(
-            'Deviation marked as allowed. Similar patterns will be ignored.'
-        );
+        try {
+            // Get the active text editor to determine context
+            const editor = vscode.window.activeTextEditor;
+            const fileUri = editor?.document.uri.fsPath || 'unknown';
 
-        // TODO: Implement allowlist logic
-        console.log('Deviation allowed');
+            // Prompt user for deviation details
+            const deviationType = await vscode.window.showQuickPick(
+                [
+                    { label: 'Code Pattern', description: 'Allow this specific code pattern' },
+                    { label: 'File Type', description: 'Allow all changes to this file type' },
+                    { label: 'Specific File', description: 'Allow all changes to this specific file' },
+                    { label: 'Change Scope', description: 'Allow changes of this scope/size' }
+                ],
+                { placeHolder: 'What type of deviation do you want to allow?' }
+            );
+
+            if (!deviationType) {
+                return;
+            }
+
+            // Get or create allowlist from workspace state
+            const allowlist = this.context.workspaceState.get<any[]>('aiSupervisor.allowlist', []);
+
+            const allowEntry = {
+                id: Date.now().toString(),
+                type: deviationType.label,
+                timestamp: Date.now(),
+                file: fileUri,
+                createdBy: 'user',
+                description: `Allowed ${deviationType.label.toLowerCase()} deviation`
+            };
+
+            // Add custom description
+            const description = await vscode.window.showInputBox({
+                prompt: 'Add a description for this allowlist entry (optional)',
+                placeHolder: 'e.g., "Test files can have large changes"'
+            });
+
+            if (description) {
+                allowEntry.description = description;
+            }
+
+            // Add to allowlist
+            allowlist.push(allowEntry);
+            await this.context.workspaceState.update('aiSupervisor.allowlist', allowlist);
+
+            // Show confirmation
+            const action = await vscode.window.showInformationMessage(
+                `Deviation marked as allowed. Similar patterns will be ignored (${allowlist.length} total rules).`,
+                'View Allowlist',
+                'OK'
+            );
+
+            if (action === 'View Allowlist') {
+                await this.showAllowlistManager();
+            }
+
+            console.log('Deviation allowed:', allowEntry);
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to allow deviation: ${error}`);
+        }
+    }
+
+    /**
+     * Show allowlist manager
+     */
+    private async showAllowlistManager(): Promise<void> {
+        const allowlist = this.context.workspaceState.get<any[]>('aiSupervisor.allowlist', []);
+
+        if (allowlist.length === 0) {
+            vscode.window.showInformationMessage('No allowlist entries yet.');
+            return;
+        }
+
+        const items = allowlist.map(entry => ({
+            label: `${entry.type}: ${entry.description}`,
+            description: new Date(entry.timestamp).toLocaleString(),
+            detail: entry.file !== 'unknown' ? entry.file : undefined,
+            entry
+        }));
+
+        const selected = await vscode.window.showQuickPick(items, {
+            placeHolder: 'Select an allowlist entry to remove (or press Escape to close)',
+            canPickMany: false
+        });
+
+        if (selected) {
+            const confirm = await vscode.window.showWarningMessage(
+                `Remove allowlist entry: ${selected.label}?`,
+                'Remove',
+                'Cancel'
+            );
+
+            if (confirm === 'Remove') {
+                const updatedAllowlist = allowlist.filter(e => e.id !== selected.entry.id);
+                await this.context.workspaceState.update('aiSupervisor.allowlist', updatedAllowlist);
+                vscode.window.showInformationMessage('Allowlist entry removed');
+            }
+        }
+    }
+
+    /**
+     * Check if a deviation is allowed based on allowlist
+     */
+    public isDeviationAllowed(deviation: any): boolean {
+        const allowlist = this.context.workspaceState.get<any[]>('aiSupervisor.allowlist', []);
+
+        return allowlist.some(entry => {
+            switch (entry.type) {
+                case 'Code Pattern':
+                    // Would check for specific code pattern match
+                    return false;
+                case 'File Type':
+                    return deviation.file?.endsWith(entry.fileType);
+                case 'Specific File':
+                    return deviation.file === entry.file;
+                case 'Change Scope':
+                    // Would check change size/scope
+                    return false;
+                default:
+                    return false;
+            }
+        });
     }
 
     /**

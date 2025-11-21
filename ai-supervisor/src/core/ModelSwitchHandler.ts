@@ -1,5 +1,6 @@
-import { ModelSwitchSummary, ConversationEntry, CodeChange, Goal } from '../types';
+import { ModelSwitchSummary, ConversationEntry, CodeChange, CodeChangeWithDiff } from '../types';
 import { SupervisorDatabase } from '../storage/Database';
+import { Goal } from './GoalTracker';
 
 /**
  * Handles model switching and context preservation
@@ -17,15 +18,44 @@ export class ModelSwitchHandler {
   generateSummary(activeGoals: Goal[]): ModelSwitchSummary {
     const recentConversations = this.db.getConversations(20);
     const recentChanges = this.db.getCodeChanges(undefined, 10);
-    
+
+    // Add diff to code changes
+    const recentChangesWithDiff: CodeChangeWithDiff[] = recentChanges.map(change => ({
+      ...change,
+      diff: this.generateDiff(change.before, change.after)
+    }));
+
     return {
       timestamp: new Date(),
       activeGoals,
-      recentChanges,
+      recentChanges: recentChangesWithDiff,
       keyDecisions: this.extractKeyDecisions(recentConversations),
       currentContext: this.generateContextSummary(recentConversations, recentChanges),
       conversationSummary: this.summarizeConversations(recentConversations)
     };
+  }
+
+  /**
+   * Generate a simple diff for code changes
+   */
+  private generateDiff(before: string, after: string): string {
+    const beforeLines = before.split('\n');
+    const afterLines = after.split('\n');
+    let diff = '';
+    const maxLen = Math.max(beforeLines.length, afterLines.length);
+
+    for (let i = 0; i < maxLen; i++) {
+      if (beforeLines[i] !== afterLines[i]) {
+        if (beforeLines[i]) {
+          diff += `- ${beforeLines[i]}\n`;
+        }
+        if (afterLines[i]) {
+          diff += `+ ${afterLines[i]}\n`;
+        }
+      }
+    }
+
+    return diff || 'No changes';
   }
 
   /**

@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import { existsSync, mkdirSync } from 'fs';
 import { dirname } from 'path';
+import { CodeChange, ConversationEntry } from '../types';
 
 /**
  * Database configuration options
@@ -141,6 +142,20 @@ export class SupervisorDatabase {
         FOREIGN KEY (deviation_id) REFERENCES deviations(id) ON DELETE CASCADE
       );
 
+      -- Goal versions table for tracking goal history
+      CREATE TABLE IF NOT EXISTS goal_versions (
+        id TEXT PRIMARY KEY,
+        goal_id TEXT NOT NULL,
+        version INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        scope TEXT NOT NULL,
+        constraints TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        change_reason TEXT,
+        FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE
+      );
+
       -- Indexes for efficient querying
       CREATE INDEX IF NOT EXISTS idx_conversations_last_message ON conversations(last_message_at DESC);
       CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id, timestamp);
@@ -151,6 +166,7 @@ export class SupervisorDatabase {
       CREATE INDEX IF NOT EXISTS idx_goals_status ON goals(status, priority DESC);
       CREATE INDEX IF NOT EXISTS idx_deviations_timestamp ON deviations(timestamp DESC);
       CREATE INDEX IF NOT EXISTS idx_deviations_type ON deviations(type, timestamp DESC);
+      CREATE INDEX IF NOT EXISTS idx_goal_versions ON goal_versions(goal_id, version DESC);
     `);
   }
 
@@ -257,5 +273,190 @@ export class SupervisorDatabase {
       this.execute('DELETE FROM deviations WHERE timestamp < ?', [cutoff]);
       // Conversations will be deleted via CASCADE when all messages are gone
     });
+  }
+
+  /**
+   * Get code changes from the database
+   * @param filePath - Optional file path to filter by
+   * @param limit - Maximum number of changes to return
+   * @returns Array of code changes
+   */
+  getCodeChanges(filePath?: string, limit: number = 100): CodeChange[] {
+    let sql = 'SELECT * FROM code_changes';
+    const params: any[] = [];
+
+    if (filePath) {
+      sql += ' WHERE file_path = ?';
+      params.push(filePath);
+    }
+
+    sql += ' ORDER BY timestamp DESC LIMIT ?';
+    params.push(limit);
+
+    const rows = this.query<{
+      id: string;
+      timestamp: string;
+      type: string;
+      file_path: string;
+      before: string | null;
+      after: string | null;
+      diff: string;
+      reason: string | null;
+      message_id: string | null;
+      conversation_id: string | null;
+    }>(sql, params);
+
+    return rows.map(row => ({
+      filePath: row.file_path,
+      before: row.before || '',
+      after: row.after || '',
+      timestamp: new Date(row.timestamp),
+      reason: row.reason || undefined,
+      conversationId: row.conversation_id || undefined,
+    }));
+  }
+
+  /**
+   * Insert a deviation into the database
+   * @param deviation - Deviation to insert
+   */
+  insertDeviation(deviation: any): void {
+    this.execute(
+      `INSERT INTO deviations (id, timestamp, type, severity, description, affected_files, related_goal_id, suggested_action)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        deviation.id,
+        deviation.timestamp.toISOString ? deviation.timestamp.toISOString() : deviation.timestamp,
+        deviation.type,
+        deviation.severity,
+        deviation.message,
+        deviation.affectedFiles ? JSON.stringify(deviation.affectedFiles) : null,
+        deviation.metadata?.relatedGoalId || null,
+        deviation.suggestedAction || null,
+      ]
+    );
+  }
+
+  /**
+   * Get deviations from the database
+   * @param type - Optional deviation type to filter by
+   * @param limit - Maximum number of deviations to return
+   * @returns Array of deviations
+   */
+  getDeviations(type?: string, limit: number = 100): any[] {
+    let sql = 'SELECT * FROM deviations';
+    const params: any[] = [];
+
+    if (type) {
+      sql += ' WHERE type = ?';
+      params.push(type);
+    }
+
+    sql += ' ORDER BY timestamp DESC LIMIT ?';
+    params.push(limit);
+
+    const rows = this.query<{
+      id: string;
+      timestamp: string;
+      type: string;
+      severity: string;
+      description: string;
+      affected_files: string | null;
+      related_goal_id: string | null;
+      suggested_action: string | null;
+    }>(sql, params);
+
+    return rows.map(row => ({
+      id: row.id,
+      timestamp: new Date(row.timestamp),
+      type: row.type,
+      severity: row.severity,
+      message: row.description,
+      affectedFiles: row.affected_files ? JSON.parse(row.affected_files) : [],
+      metadata: {
+        relatedGoalId: row.related_goal_id,
+      },
+      suggestedAction: row.suggested_action,
+    }));
+  }
+
+  /**
+   * Insert an intervention into the database
+   * @param intervention - Intervention to insert
+   */
+  insertIntervention(intervention: any): void {
+    this.execute(
+      `INSERT INTO interventions (id, deviation_id, timestamp, type, message, user_notified, ai_message_generated)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        intervention.id,
+        intervention.deviationId,
+        intervention.timestamp.toISOString ? intervention.timestamp.toISOString() : intervention.timestamp,
+        intervention.type,
+        intervention.message,
+        intervention.userNotified ? 1 : 0,
+        intervention.aiMessageGenerated,
+      ]
+    );
+  }
+
+  /**
+   * Get interventions from the database
+   * @param deviationId - Optional deviation ID to filter by
+   * @returns Array of interventions
+   */
+  getInterventions(deviationId?: string): any[] {
+    let sql = 'SELECT * FROM interventions';
+    const params: any[] = [];
+
+    if (deviationId) {
+      sql += ' WHERE deviation_id = ?';
+      params.push(deviationId);
+    }
+
+    sql += ' ORDER BY timestamp DESC';
+
+    const rows = this.query<{
+      id: string;
+      deviation_id: string;
+      timestamp: string;
+      type: string;
+      message: string;
+      user_notified: number;
+      ai_message_generated: string;
+    }>(sql, params);
+
+    return rows.map(row => ({
+      id: row.id,
+      deviationId: row.deviation_id,
+      timestamp: new Date(row.timestamp),
+      type: row.type,
+      message: row.message,
+      userNotified: row.user_notified === 1,
+      aiMessageGenerated: row.ai_message_generated,
+    }));
+  }
+
+  /**
+   * Get recent conversation messages
+   * @param limit - Maximum number of messages to return
+   * @returns Array of conversation entries
+   */
+  getConversations(limit: number = 50): ConversationEntry[] {
+    const rows = this.query<{
+      id: string;
+      timestamp: string;
+      role: string;
+      content: string;
+      metadata: string | null;
+    }>('SELECT id, timestamp, role, content, metadata FROM messages ORDER BY timestamp DESC LIMIT ?', [limit]);
+
+    return rows.map(row => ({
+      id: row.id,
+      timestamp: new Date(row.timestamp),
+      role: row.role as 'user' | 'assistant',
+      content: row.content,
+      metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
+    }));
   }
 }

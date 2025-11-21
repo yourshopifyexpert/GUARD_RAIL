@@ -41,7 +41,6 @@ export class InterventionManager extends EventEmitter {
   private interventionThreshold: string;
   private channels: AlertChannel[];
   private maxAlertsBeforeHalt: number;
-  private autoCorrect: boolean;
   private isPaused: boolean;
   private isHalted: boolean;
   private alertCount: number;
@@ -52,7 +51,6 @@ export class InterventionManager extends EventEmitter {
     this.interventionThreshold = config.threshold || 'medium';
     this.channels = config.channels || [AlertChannel.CONSOLE, AlertChannel.EVENT];
     this.maxAlertsBeforeHalt = config.maxAlertsBeforeHalt || 10;
-    this.autoCorrect = config.autoCorrect !== false;
     this.isPaused = false;
     this.isHalted = false;
     this.alertCount = 0;
@@ -148,7 +146,7 @@ export class InterventionManager extends EventEmitter {
    * Generate a user-friendly message for the deviation
    */
   private generateUserMessage(deviation: Deviation): string {
-    let message = 'ALERT: ' + deviation.description;
+    let message = 'ALERT: ' + deviation.message;
 
     if (deviation.affectedFiles && deviation.affectedFiles.length > 0) {
       message += '\nAffected files: ' + deviation.affectedFiles.join(', ');
@@ -166,7 +164,7 @@ export class InterventionManager extends EventEmitter {
    */
   private generateAIMessage(deviation: Deviation): string {
     let message = 'I detected an issue with your recent changes:\n\n';
-    message += deviation.description + '\n\n';
+    message += deviation.message + '\n\n';
 
     if (deviation.type === 'code_reversal') {
       message += 'You appear to be reversing previous changes. Please clarify:\n';

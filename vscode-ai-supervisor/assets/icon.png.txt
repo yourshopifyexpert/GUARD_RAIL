@@ -1,0 +1,12 @@
+Note: icon.png should be a 256x256 PNG image.
+
+For now, the extension will use VS Code's default icon.
+
+To create a proper icon:
+1. Design a 256x256 PNG image
+2. Use the AI Supervisor theme (eye with circuit pattern)
+3. Save as assets/icon.png
+4. Recommended tools: Figma, Photoshop, GIMP, or Inkscape
+
+Temporary SVG version available at: assets/sidebar-icon.svg
+Convert this SVG to PNG for the marketplace icon.
