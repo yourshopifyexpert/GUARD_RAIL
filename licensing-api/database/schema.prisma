@@ -1,0 +1,100 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  name              String?
+  stripeCustomerId  String?   @unique
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  licenses          License[]
+
+  @@index([email])
+  @@index([stripeCustomerId])
+}
+
+model License {
+  id                    String            @id @default(uuid())
+  key                   String            @unique
+  userId                String
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type                  String            // individual, team, student, oss, trial
+  status                String            // active, expired, cancelled, suspended
+  billingPeriod         String?           // monthly, annual
+
+  issuedAt              DateTime          @default(now())
+  expiresAt             DateTime
+  lastValidatedAt       DateTime?
+
+  stripeSubscriptionId  String?           @unique
+  stripePriceId         String?
+
+  maxActivations        Int               @default(3)
+  currentActivations    Int               @default(0)
+
+  metadata              Json?
+
+  activations           Activation[]
+  validationLogs        ValidationLog[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([stripeSubscriptionId])
+}
+
+model Activation {
+  id              String    @id @default(uuid())
+  licenseId       String
+  license         License   @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+
+  machineId       String
+  activatedAt     DateTime  @default(now())
+  lastSeenAt      DateTime  @default(now())
+  deactivatedAt   DateTime?
+
+  metadata        Json?
+
+  @@unique([licenseId, machineId])
+  @@index([licenseId])
+  @@index([machineId])
+}
+
+model ValidationLog {
+  id          String    @id @default(uuid())
+  licenseId   String
+  license     License   @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+
+  timestamp   DateTime  @default(now())
+  valid       Boolean
+  reason      String?
+  ipAddress   String?
+  userAgent   String?
+
+  @@index([licenseId])
+  @@index([timestamp])
+}
+
+model StripeEvent {
+  id              String    @id @default(uuid())
+  stripeEventId   String    @unique
+  type            String
+  processed       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  data            Json
+
+  @@index([stripeEventId])
+  @@index([processed])
+}

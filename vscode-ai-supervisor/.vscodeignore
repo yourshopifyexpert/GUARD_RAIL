@@ -1,0 +1,27 @@
+# Build outputs
+.vscode/**
+.vscode-test/**
+out/test/**
+src/**
+tsconfig.json
+tsconfig.webview.json
+webpack.config.js
+
+# Development
+.gitignore
+.eslintrc.json
+**/*.map
+**/*.ts
+!**/*.d.ts
+
+# Testing
+**/.DS_Store
+*.vsix
+
+# Node
+node_modules/
+npm-debug.log
+
+# Other
+.prettierrc
+.editorconfig

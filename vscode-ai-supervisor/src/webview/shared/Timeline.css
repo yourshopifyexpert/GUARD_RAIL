@@ -1,0 +1,85 @@
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.timeline-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--vscode-descriptionForeground);
+  font-style: italic;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  border-left: 3px solid var(--vscode-panel-border);
+}
+
+.timeline-item:hover {
+  background-color: var(--vscode-list-hoverBackground);
+}
+
+.timeline-item:focus {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: 2px;
+}
+
+.timeline-item__indicator {
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.timeline-item__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.timeline-item__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.timeline-item__title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.timeline-item__time {
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
+  white-space: nowrap;
+}
+
+.timeline-item__description {
+  font-size: 13px;
+  color: var(--vscode-descriptionForeground);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.timeline-item__file,
+.timeline-item__changes {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
+  margin-right: 12px;
+}
+
+.timeline-item__file .codicon,
+.timeline-item__changes .codicon {
+  font-size: 14px;
+}

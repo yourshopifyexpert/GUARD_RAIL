@@ -1,0 +1,108 @@
+.diff-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--vscode-editor-background);
+}
+
+.diff-viewer__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: var(--vscode-editorGroupHeader-tabsBackground);
+  border-bottom: 1px solid var(--vscode-panel-border);
+  font-family: var(--vscode-font-family);
+}
+
+.diff-viewer__file-path {
+  font-family: var(--vscode-editor-font-family);
+  font-size: 13px;
+}
+
+.diff-viewer__content {
+  flex: 1;
+  overflow: auto;
+  padding: 8px;
+}
+
+.diff-hunk {
+  margin-bottom: 16px;
+}
+
+.diff-hunk__header {
+  padding: 4px 8px;
+  background-color: var(--vscode-diffEditor-diagonalFill);
+  color: var(--vscode-descriptionForeground);
+  font-family: var(--vscode-editor-font-family);
+  font-size: 12px;
+  border-radius: 2px;
+  margin-bottom: 4px;
+}
+
+.diff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--vscode-editor-font-family);
+  font-size: var(--vscode-editor-font-size);
+}
+
+.diff-line {
+  transition: background-color 0.15s ease;
+}
+
+.diff-line:hover {
+  background-color: var(--vscode-list-hoverBackground);
+}
+
+.diff-line--add {
+  background-color: var(--vscode-diffEditor-insertedTextBackground);
+}
+
+.diff-line--remove {
+  background-color: var(--vscode-diffEditor-removedTextBackground);
+}
+
+.diff-line--context {
+  background-color: transparent;
+}
+
+.diff-line__number {
+  padding: 2px 8px;
+  text-align: right;
+  color: var(--vscode-editorLineNumber-foreground);
+  user-select: none;
+  min-width: 40px;
+  border-right: 1px solid var(--vscode-panel-border);
+}
+
+.diff-line__number--old {
+  border-right-color: transparent;
+}
+
+.diff-line__indicator {
+  padding: 2px 8px;
+  text-align: center;
+  width: 20px;
+  font-weight: bold;
+  user-select: none;
+}
+
+.diff-line--add .diff-line__indicator {
+  color: var(--vscode-gitDecoration-addedResourceForeground);
+}
+
+.diff-line--remove .diff-line__indicator {
+  color: var(--vscode-gitDecoration-deletedResourceForeground);
+}
+
+.diff-line__content {
+  padding: 2px 8px;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.diff-line__content code {
+  font-family: inherit;
+  background: none;
+}

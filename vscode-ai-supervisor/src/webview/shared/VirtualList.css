@@ -1,0 +1,36 @@
+.virtual-list-container {
+  flex: 1;
+  overflow: hidden;
+}
+
+.virtual-list-item {
+  cursor: pointer;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+  transition: background-color 0.15s ease;
+}
+
+.virtual-list-item:hover {
+  background-color: var(--vscode-list-hoverBackground);
+}
+
+.virtual-list-item--selected {
+  background-color: var(--vscode-list-activeSelectionBackground);
+  color: var(--vscode-list-activeSelectionForeground);
+}
+
+.virtual-list-item:focus {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: -1px;
+}
+
+.virtual-list-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--vscode-descriptionForeground);
+  font-style: italic;
+  padding: 20px;
+  text-align: center;
+}

@@ -1,0 +1,59 @@
+.ai-supervisor-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 2px;
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.ai-supervisor-button:focus {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: 2px;
+}
+
+.ai-supervisor-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ai-supervisor-button--primary {
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+}
+
+.ai-supervisor-button--primary:hover:not(:disabled) {
+  background-color: var(--vscode-button-hoverBackground);
+}
+
+.ai-supervisor-button--secondary {
+  background-color: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+}
+
+.ai-supervisor-button--secondary:hover:not(:disabled) {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+.ai-supervisor-button--danger {
+  background-color: var(--vscode-inputValidation-errorBackground);
+  color: var(--vscode-inputValidation-errorForeground);
+  border: 1px solid var(--vscode-inputValidation-errorBorder);
+}
+
+.ai-supervisor-button--danger:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.ai-supervisor-button .codicon {
+  font-size: 16px;
+  line-height: 16px;
+}
+
+.ai-supervisor-button__text {
+  line-height: 16px;
+}

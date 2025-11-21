@@ -1,0 +1,278 @@
+{
+  "name": "ai-supervisor",
+  "displayName": "AI Supervisor - Monitor & Control AI Code Changes",
+  "description": "Monitor AI coding assistants in real-time, detect deviations, and maintain control over AI-generated code changes",
+  "version": "0.1.0",
+  "publisher": "your-publisher-name",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Machine Learning",
+    "Other"
+  ],
+  "keywords": [
+    "AI",
+    "assistant",
+    "monitoring",
+    "safety",
+    "supervision",
+    "copilot",
+    "claude",
+    "cursor",
+    "code-quality"
+  ],
+  "icon": "assets/icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/ai-supervisor"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/ai-supervisor/issues"
+  },
+  "homepage": "https://github.com/your-org/ai-supervisor#readme",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "aiSupervisor.showActivityMonitor",
+        "title": "Show Activity Monitor",
+        "category": "AI Supervisor",
+        "icon": "$(pulse)"
+      },
+      {
+        "command": "aiSupervisor.showGoalManager",
+        "title": "Manage Goals",
+        "category": "AI Supervisor",
+        "icon": "$(target)"
+      },
+      {
+        "command": "aiSupervisor.showChangeInspector",
+        "title": "Inspect Changes",
+        "category": "AI Supervisor",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "aiSupervisor.pauseMonitoring",
+        "title": "Pause Monitoring",
+        "category": "AI Supervisor",
+        "icon": "$(debug-pause)"
+      },
+      {
+        "command": "aiSupervisor.resumeMonitoring",
+        "title": "Resume Monitoring",
+        "category": "AI Supervisor",
+        "icon": "$(debug-start)"
+      },
+      {
+        "command": "aiSupervisor.generateHandoff",
+        "title": "Generate Model Switch Handoff",
+        "category": "AI Supervisor",
+        "icon": "$(git-pull-request)"
+      },
+      {
+        "command": "aiSupervisor.clearHistory",
+        "title": "Clear Activity History",
+        "category": "AI Supervisor"
+      },
+      {
+        "command": "aiSupervisor.exportReport",
+        "title": "Export Supervision Report",
+        "category": "AI Supervisor"
+      },
+      {
+        "command": "aiSupervisor.openSettings",
+        "title": "Open Settings",
+        "category": "AI Supervisor",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "aiSupervisor.activatePremium",
+        "title": "Activate Premium License",
+        "category": "AI Supervisor"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "aiSupervisor",
+          "title": "AI Supervisor",
+          "icon": "assets/sidebar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "aiSupervisor": [
+        {
+          "id": "aiSupervisor.activityView",
+          "name": "Activity Monitor",
+          "icon": "$(pulse)",
+          "contextualTitle": "AI Supervisor Activity"
+        },
+        {
+          "id": "aiSupervisor.goalsView",
+          "name": "Project Goals",
+          "icon": "$(target)"
+        },
+        {
+          "id": "aiSupervisor.alertsView",
+          "name": "Alerts & Issues",
+          "icon": "$(warning)"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "aiSupervisor.activityView",
+        "contents": "No AI activity detected yet.\n[Start Monitoring](command:aiSupervisor.resumeMonitoring)\nMake some code changes with your AI assistant to see them tracked here."
+      },
+      {
+        "view": "aiSupervisor.goalsView",
+        "contents": "Define your project goals to help AI Supervisor detect deviations.\n[Add First Goal](command:aiSupervisor.showGoalManager)"
+      }
+    ],
+    "configuration": {
+      "title": "AI Supervisor",
+      "properties": {
+        "aiSupervisor.monitoring.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic monitoring of AI code changes"
+        },
+        "aiSupervisor.monitoring.sensitivity": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "default": "medium",
+          "description": "Sensitivity level for deviation detection"
+        },
+        "aiSupervisor.alerts.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show toast notifications for alerts"
+        },
+        "aiSupervisor.alerts.severity": {
+          "type": "string",
+          "enum": [
+            "all",
+            "warning",
+            "error"
+          ],
+          "default": "all",
+          "description": "Minimum alert severity to display"
+        },
+        "aiSupervisor.storage.retentionDays": {
+          "type": "number",
+          "default": 30,
+          "minimum": 1,
+          "maximum": 365,
+          "description": "Number of days to retain activity history"
+        },
+        "aiSupervisor.storage.location": {
+          "type": "string",
+          "enum": [
+            "workspace",
+            "global"
+          ],
+          "default": "workspace",
+          "description": "Where to store supervision data"
+        },
+        "aiSupervisor.premium.licenseKey": {
+          "type": "string",
+          "default": "",
+          "description": "Premium license key"
+        },
+        "aiSupervisor.detection.aiTools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "github.copilot",
+            "continue.continue",
+            "sourcegraph.cody"
+          ],
+          "description": "AI tool extensions to detect and monitor"
+        },
+        "aiSupervisor.performance.enableBackgroundAnalysis": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable background analysis of code changes (Premium)"
+        }
+      }
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "aiSupervisor.pauseMonitoring",
+          "when": "view == aiSupervisor.activityView && aiSupervisor.monitoring.active",
+          "group": "navigation"
+        },
+        {
+          "command": "aiSupervisor.resumeMonitoring",
+          "when": "view == aiSupervisor.activityView && !aiSupervisor.monitoring.active",
+          "group": "navigation"
+        },
+        {
+          "command": "aiSupervisor.showGoalManager",
+          "when": "view == aiSupervisor.goalsView",
+          "group": "navigation"
+        },
+        {
+          "command": "aiSupervisor.openSettings",
+          "when": "view =~ /^aiSupervisor\\./",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "aiSupervisor.pauseMonitoring",
+          "when": "aiSupervisor.monitoring.active"
+        },
+        {
+          "command": "aiSupervisor.resumeMonitoring",
+          "when": "!aiSupervisor.monitoring.active"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "build:vsix": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "@vscode/test-electron": "^2.3.8",
+    "eslint": "^8.54.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.2",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "@vscode/vsce": "^2.22.0"
+  },
+  "dependencies": {
+    "ai-supervisor": "file:../ai-supervisor-core"
+  }
+}
