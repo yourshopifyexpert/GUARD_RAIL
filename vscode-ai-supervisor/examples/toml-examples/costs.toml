@@ -1,0 +1,375 @@
+# Example API Usage and Cost Tracking
+# File: .vscode/ai-supervisor/costs.toml
+
+version = "1.0"
+currency = "USD"
+last_updated = 2024-11-21T16:00:00Z
+
+# ============================================================================
+# CURRENT MONTH SUMMARY
+# ============================================================================
+
+[summary.current]
+month = "2024-11"
+start_date = 2024-11-01T00:00:00Z
+end_date = 2024-11-30T23:59:59Z
+
+# Overall totals
+total_cost_usd = 3.47
+total_requests = 142
+total_input_tokens = 456789
+total_output_tokens = 156234
+total_tokens = 613023
+average_cost_per_request = 0.0244
+
+# Cost by provider
+[[summary.current.by_provider]]
+provider = "openai"
+model = "gpt-4o"
+requests = 98
+cost_usd = 2.34
+input_tokens = 245678
+output_tokens = 89012
+total_tokens = 334690
+pricing_per_1m_input = 2.50
+pricing_per_1m_output = 10.00
+
+[[summary.current.by_provider]]
+provider = "anthropic"
+model = "claude-3-5-sonnet"
+requests = 44
+cost_usd = 1.13
+input_tokens = 211111
+output_tokens = 67222
+total_tokens = 278333
+pricing_per_1m_input = 3.00
+pricing_per_1m_output = 15.00
+
+[[summary.current.by_provider]]
+provider = "ollama"
+model = "llama3.1:70b"
+requests = 12
+cost_usd = 0.00  # Local model - free!
+input_tokens = 45000
+output_tokens = 12000
+total_tokens = 57000
+pricing_per_1m_input = 0.00
+pricing_per_1m_output = 0.00
+
+# Cost by analysis type
+[[summary.current.by_type]]
+type = "security_analysis"
+requests = 34
+cost_usd = 1.45
+average_cost = 0.0426
+
+[[summary.current.by_type]]
+type = "constraint_violation"
+requests = 56
+cost_usd = 1.22
+average_cost = 0.0218
+
+[[summary.current.by_type]]
+type = "performance_analysis"
+requests = 28
+cost_usd = 0.52
+average_cost = 0.0186
+
+[[summary.current.by_type]]
+type = "general_review"
+requests = 24
+cost_usd = 0.28
+average_cost = 0.0117
+
+# ============================================================================
+# DAILY BREAKDOWN
+# ============================================================================
+
+[[daily]]
+date = 2024-11-21
+total_cost_usd = 0.47
+total_requests = 23
+total_tokens = 45678
+
+# Individual requests for this day
+[[daily.requests]]
+id = "20241121-153045-abc123"
+timestamp = 2024-11-21T15:30:45Z
+provider = "openai"
+model = "gpt-4o"
+input_tokens = 2450
+output_tokens = 856
+total_tokens = 3306
+cost_usd = 0.0147
+file = "src/auth/login.ts"
+analysis_type = "constraint_violation"
+severity = "high"
+
+[[daily.requests]]
+id = "20241121-140530-def456"
+timestamp = 2024-11-21T14:05:30Z
+provider = "anthropic"
+model = "claude-3-5-sonnet"
+input_tokens = 3200
+output_tokens = 1100
+total_tokens = 4300
+cost_usd = 0.0261
+file = "src/api/search.ts"
+analysis_type = "security_analysis"
+severity = "critical"
+
+[[daily.requests]]
+id = "20241121-112000-ghi789"
+timestamp = 2024-11-21T11:20:00Z
+provider = "openai"
+model = "gpt-4o"
+input_tokens = 1650
+output_tokens = 720
+total_tokens = 2370
+cost_usd = 0.0113
+file = "src/api/users.ts"
+analysis_type = "performance_analysis"
+severity = "high"
+
+[[daily.requests]]
+id = "20241121-100000-jkl012"
+timestamp = 2024-11-21T10:00:00Z
+provider = "anthropic"
+model = "claude-3-5-sonnet"
+input_tokens = 850
+output_tokens = 180
+total_tokens = 1030
+cost_usd = 0.0047
+file = "src/utils/validation.ts"
+analysis_type = "general_review"
+severity = "none"
+
+# More requests...
+[[daily.requests]]
+id = "20241121-163000-mno345"
+timestamp = 2024-11-21T16:30:00Z
+provider = "ollama"
+model = "llama3.1:70b"
+input_tokens = 1800
+output_tokens = 600
+total_tokens = 2400
+cost_usd = 0.00  # Local model
+file = "src/middleware/auth.ts"
+analysis_type = "general_review"
+severity = "none"
+
+[[daily]]
+date = 2024-11-20
+total_cost_usd = 0.38
+total_requests = 19
+total_tokens = 38456
+
+[[daily]]
+date = 2024-11-19
+total_cost_usd = 0.52
+total_requests = 25
+total_tokens = 52134
+
+# ============================================================================
+# WEEKLY BREAKDOWN
+# ============================================================================
+
+[[weekly]]
+week_start = 2024-11-18
+week_end = 2024-11-24
+week_number = 47
+total_cost_usd = 1.89
+total_requests = 87
+total_tokens = 198765
+average_daily_cost = 0.27
+
+# ============================================================================
+# HISTORICAL DATA
+# ============================================================================
+
+[[monthly]]
+month = "2024-10"
+total_cost_usd = 12.34
+total_requests = 456
+total_tokens = 1234567
+average_cost_per_request = 0.027
+highest_daily_cost = 0.89
+lowest_daily_cost = 0.12
+
+[[monthly.by_provider]]
+provider = "openai"
+cost_usd = 8.45
+requests = 298
+
+[[monthly.by_provider]]
+provider = "anthropic"
+cost_usd = 3.89
+requests = 158
+
+[[monthly]]
+month = "2024-09"
+total_cost_usd = 8.76
+total_requests = 312
+total_tokens = 987654
+
+# ============================================================================
+# COST PROJECTIONS
+# ============================================================================
+
+[projections]
+# Based on current month usage pattern
+daily_average_usd = 0.386
+projected_month_end_usd = 11.58
+days_until_limit = 77  # Days until monthly limit ($50)
+on_track_for_limit = false
+
+# Trend analysis
+[projections.trend]
+direction = "stable"  # "increasing", "decreasing", "stable"
+change_percent = 2.3
+previous_month_same_day = 3.21
+
+# ============================================================================
+# BUDGET ALERTS
+# ============================================================================
+
+[[budget_alerts]]
+type = "daily_threshold"
+threshold_usd = 5.00
+current_usd = 0.47
+percentage = 9.4
+triggered = false
+
+[[budget_alerts]]
+type = "monthly_threshold"
+threshold_usd = 50.00
+current_usd = 3.47
+percentage = 6.94
+triggered = false
+
+[[budget_alerts]]
+type = "unusual_spike"
+threshold_factor = 3.0  # 3x normal usage
+current_factor = 1.2
+triggered = false
+last_triggered = 2024-11-15T14:30:00Z
+
+# ============================================================================
+# COST OPTIMIZATION SUGGESTIONS
+# ============================================================================
+
+[[optimization_suggestions]]
+type = "use_local_models"
+potential_savings_usd = 1.50
+description = "12 analyses could use local Ollama instead of cloud APIs"
+impact = "43% cost reduction"
+recommendation = "Switch non-critical analyses to llama3.1:70b"
+
+[[optimization_suggestions]]
+type = "use_cheaper_models"
+potential_savings_usd = 0.85
+description = "Use gpt-4o-mini for simple analyses instead of gpt-4o"
+impact = "24% cost reduction"
+recommendation = "Configure dual-tier analysis: mini for quick review, full for critical"
+
+[[optimization_suggestions]]
+type = "enable_caching"
+potential_savings_usd = 0.45
+description = "Enable response caching for similar code patterns"
+impact = "13% cost reduction"
+recommendation = "Set cache_ttl_minutes = 60 in config"
+
+# ============================================================================
+# PROVIDER COMPARISON
+# ============================================================================
+
+[comparison]
+# Cost per analysis by provider
+[comparison.cost_per_analysis]
+openai_gpt4o = 0.0239
+anthropic_claude35 = 0.0257
+google_gemini = 0.0000  # Not used this month
+ollama_local = 0.0000
+
+# Performance metrics
+[comparison.performance]
+[comparison.performance.openai]
+average_tokens = 3415
+average_time_ms = 1150
+accuracy_score = 0.92
+
+[comparison.performance.anthropic]
+average_tokens = 6326
+average_time_ms = 1680
+accuracy_score = 0.94
+
+[comparison.performance.ollama]
+average_tokens = 4750
+average_time_ms = 2800
+accuracy_score = 0.78
+
+# ============================================================================
+# SAVINGS FROM LOCAL MODELS
+# ============================================================================
+
+[local_savings]
+# If all 12 Ollama analyses used OpenAI instead
+analyses_run_locally = 12
+equivalent_openai_cost = 0.29
+actual_cost = 0.00
+total_saved = 0.29
+percentage_saved = 100.0
+
+# Year-to-date savings
+ytd_local_analyses = 234
+ytd_saved_usd = 5.62
+
+# ============================================================================
+# DETAILED PRICING
+# ============================================================================
+
+[[pricing]]
+provider = "openai"
+model = "gpt-4o"
+input_per_1m_tokens = 2.50
+output_per_1m_tokens = 10.00
+last_updated = 2024-11-01T00:00:00Z
+
+[[pricing]]
+provider = "openai"
+model = "gpt-4o-mini"
+input_per_1m_tokens = 0.15
+output_per_1m_tokens = 0.60
+last_updated = 2024-11-01T00:00:00Z
+
+[[pricing]]
+provider = "anthropic"
+model = "claude-3-5-sonnet"
+input_per_1m_tokens = 3.00
+output_per_1m_tokens = 15.00
+last_updated = 2024-11-01T00:00:00Z
+
+[[pricing]]
+provider = "google"
+model = "gemini-pro"
+input_per_1m_tokens = 0.00
+output_per_1m_tokens = 0.00
+note = "Free tier: 60 requests/minute"
+last_updated = 2024-11-01T00:00:00Z
+
+[[pricing]]
+provider = "ollama"
+model = "local"
+input_per_1m_tokens = 0.00
+output_per_1m_tokens = 0.00
+note = "Local model - free"
+
+# ============================================================================
+# EXPORT METADATA
+# ============================================================================
+
+[export]
+generated_at = 2024-11-21T16:00:00Z
+generated_by = "ai-supervisor"
+version = "1.0.0"
+report_format = "toml"

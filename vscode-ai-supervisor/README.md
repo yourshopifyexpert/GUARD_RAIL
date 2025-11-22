@@ -47,6 +47,18 @@ AI Supervisor provides a comprehensive monitoring and supervision layer for AI c
 - Copy to clipboard or preview
 - Seamless transitions between AI tools
 
+### 🛡️ Multi-Model Guardian System
+- **Cross-model verification**: Code with Claude, guard with GPT-4o (and vice versa)
+- **Independent oversight**: Different AI models catch different issues
+- **Automatic detection**: Identifies which model is coding, selects appropriate guardian
+- **No shared blind spots**: Different training = different perspectives
+- **Local or cloud**: Use free local models (Ollama) or cloud APIs for max accuracy
+- **Detailed reasoning**: Guardians explain WHY they flag issues
+
+> **Why different models?** When you code with Claude and Claude checks its own work = blind spots! When you code with Claude and GPT-4 guards = independent review!
+
+[Learn more about the Multi-Model Guardian System](MULTI_MODEL_GUARDIAN.md)
+
 ## Installation
 
 ### From VS Code Marketplace
@@ -71,6 +83,25 @@ AI Supervisor provides a comprehensive monitoring and supervision layer for AI c
 6. **Respond to alerts** - Get notified when AI deviates from your goals
 
 ## Usage
+
+### Setting Up Your Guardian
+
+Configure which AI model acts as your guardian to provide independent oversight:
+
+1. **Open Command Palette**: `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (Mac)
+2. **Run**: `AI Supervisor: Configure Guardian`
+3. **Choose Provider**:
+   - **Cloud Models** (best accuracy): OpenAI (GPT-4o), Anthropic (Claude 3.5), Google (Gemini)
+   - **Local Models** (free, private): Ollama with Llama 3.1, DeepSeek Coder, etc.
+4. **Enter API Key** (for cloud providers) or set up Ollama endpoint (for local)
+5. **Test Connection** and you're ready!
+
+**Automatic Pairing**: AI Supervisor automatically pairs your coding model with a different guardian:
+- Code with **Claude** → **GPT-4o** guards
+- Code with **GPT-4** → **Claude 3.5** guards
+- Code with **Copilot** → **Claude 3.5** guards
+
+See [SETUP_GUARDIAN.md](SETUP_GUARDIAN.md) for detailed setup instructions.
 
 ### Setting Up Goals
 
@@ -114,12 +145,15 @@ When switching between AI tools or models:
 
 ## Commands
 
+- `AI Supervisor: Configure Guardian` - Set up guardian model for independent review
 - `AI Supervisor: Show Activity Monitor` - View real-time activity
 - `AI Supervisor: Manage Goals` - Define project goals
 - `AI Supervisor: Inspect Changes` - Review AI code changes
 - `AI Supervisor: Pause Monitoring` - Temporarily pause supervision
 - `AI Supervisor: Resume Monitoring` - Resume supervision
 - `AI Supervisor: Generate Model Switch Handoff` - Create context handoff
+- `AI Supervisor: Test Guardian` - Test guardian connection and analysis
+- `AI Supervisor: View Usage Report` - View guardian API usage and costs
 - `AI Supervisor: Clear Activity History` - Reset activity log
 - `AI Supervisor: Export Report` - Export supervision report (Premium)
 - `AI Supervisor: Activate Premium License` - Unlock premium features
@@ -130,14 +164,29 @@ Configure AI Supervisor in VS Code settings:
 
 ```json
 {
+  // Guardian settings
+  "aiSupervisor.guardian.provider": "openai",
+  "aiSupervisor.guardian.model": "gpt-4o",
+  "aiSupervisor.guardian.autoSelect": true,
+  "aiSupervisor.guardian.analysisDepth": "standard",
+  "aiSupervisor.guardian.costLimit.daily": 5.00,
+  "aiSupervisor.guardian.costLimit.monthly": 50.00,
+
+  // Monitoring settings
   "aiSupervisor.monitoring.enabled": true,
   "aiSupervisor.monitoring.sensitivity": "medium",
+
+  // Alert settings
   "aiSupervisor.alerts.showNotifications": true,
   "aiSupervisor.alerts.severity": "all",
+
+  // Storage settings
   "aiSupervisor.storage.retentionDays": 30,
   "aiSupervisor.storage.location": "workspace"
 }
 ```
+
+See [SETUP_GUARDIAN.md](SETUP_GUARDIAN.md) for complete configuration guide and [TOML_STORAGE.md](TOML_STORAGE.md) for data storage format.
 
 ## Premium Features
 
@@ -272,6 +321,23 @@ Detection is automatic - no configuration needed!
 1. Reduce retention days in settings
 2. Clear activity history periodically
 3. Disable background analysis for large projects
+
+## Documentation
+
+Complete documentation for the Multi-Model Guardian System:
+
+- **[MULTI_MODEL_GUARDIAN.md](MULTI_MODEL_GUARDIAN.md)** - Understand the concept of cross-model verification
+- **[SETUP_GUARDIAN.md](SETUP_GUARDIAN.md)** - Step-by-step setup guide for cloud and local models
+- **[TOML_STORAGE.md](TOML_STORAGE.md)** - Learn about TOML data storage format
+- **[examples/guardian-usage.ts](examples/guardian-usage.ts)** - Code examples showing how guardian works
+- **[examples/toml-examples/](examples/toml-examples/)** - Sample TOML files with detailed annotations
+
+### Quick Links
+
+- **Getting Started**: [SETUP_GUARDIAN.md](SETUP_GUARDIAN.md)
+- **Understanding Guardians**: [MULTI_MODEL_GUARDIAN.md](MULTI_MODEL_GUARDIAN.md)
+- **Data Format**: [TOML_STORAGE.md](TOML_STORAGE.md)
+- **Code Examples**: [examples/guardian-usage.ts](examples/guardian-usage.ts)
 
 ## Contributing
 

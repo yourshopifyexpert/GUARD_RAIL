@@ -1,0 +1,122 @@
+# AI Supervisor - Project Goals
+# Generated: 2024-11-21T10:00:00Z
+
+[[goals]]
+id = "goal-001"
+title = "Build REST API"
+description = "Create user authentication endpoints with JWT tokens, password hashing, and email verification"
+status = "active"
+created = 2024-11-21T10:00:00Z
+updated = 2024-11-21T10:00:00Z
+
+[goals.scope]
+allowed_paths = [
+  "src/api/**",
+  "src/auth/**",
+  "src/routes/**",
+  "tests/api/**"
+]
+
+[[goals.constraints]]
+constraint = "No hardcoded secrets or API keys"
+
+[[goals.constraints]]
+constraint = "All endpoints must have authentication middleware"
+
+[[goals.constraints]]
+constraint = "Use bcrypt for password hashing"
+
+[[goals.constraints]]
+constraint = "Implement rate limiting on all endpoints"
+
+[[goals.constraints]]
+constraint = "Use prepared statements for database queries"
+
+
+[[goals]]
+id = "goal-002"
+title = "Refactor for Performance"
+description = "Optimize database queries, reduce N+1 queries, implement caching, and improve response times"
+status = "active"
+created = 2024-11-21T11:00:00Z
+updated = 2024-11-21T11:00:00Z
+
+[goals.scope]
+allowed_paths = [
+  "src/services/**",
+  "src/repositories/**",
+  "src/cache/**"
+]
+
+[[goals.constraints]]
+constraint = "Maintain existing functionality"
+
+[[goals.constraints]]
+constraint = "Add tests before refactoring"
+
+[[goals.constraints]]
+constraint = "Keep changes atomic and reversible"
+
+[[goals.constraints]]
+constraint = "Document performance improvements"
+
+
+[[goals]]
+id = "goal-003"
+title = "Security Hardening"
+description = "Implement OWASP security best practices, add input validation, prevent SQL injection, and secure API endpoints"
+status = "active"
+created = 2024-11-21T12:00:00Z
+updated = 2024-11-21T12:00:00Z
+
+[goals.scope]
+allowed_paths = [
+  "src/**",
+  "tests/security/**"
+]
+
+[[goals.constraints]]
+constraint = "Never commit secrets or credentials"
+
+[[goals.constraints]]
+constraint = "All user inputs must be validated and sanitized"
+
+[[goals.constraints]]
+constraint = "Use parameterized queries for all database operations"
+
+[[goals.constraints]]
+constraint = "Implement CSRF protection"
+
+[[goals.constraints]]
+constraint = "Add security headers to all responses"
+
+[[goals.constraints]]
+constraint = "No deletion of security tests"
+
+
+[[goals]]
+id = "goal-004"
+title = "Database Migration"
+description = "Migrate from MongoDB to PostgreSQL with proper schema design, relationships, and indexes"
+status = "paused"
+created = 2024-11-21T13:00:00Z
+updated = 2024-11-21T14:00:00Z
+
+[goals.scope]
+allowed_paths = [
+  "src/db/**",
+  "migrations/**",
+  "src/models/**"
+]
+
+[[goals.constraints]]
+constraint = "Use Knex.js for migrations"
+
+[[goals.constraints]]
+constraint = "Maintain data integrity during migration"
+
+[[goals.constraints]]
+constraint = "Add proper indexes for performance"
+
+[[goals.constraints]]
+constraint = "Document schema changes"

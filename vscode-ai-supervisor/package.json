@@ -98,6 +98,36 @@
         "command": "aiSupervisor.activatePremium",
         "title": "Activate Premium License",
         "category": "AI Supervisor"
+      },
+      {
+        "command": "aiSupervisor.configureGuardianModel",
+        "title": "Configure Guardian Model",
+        "category": "AI Supervisor",
+        "icon": "$(robot)"
+      },
+      {
+        "command": "aiSupervisor.viewAnalysisHistory",
+        "title": "View AI Analysis History",
+        "category": "AI Supervisor",
+        "icon": "$(history)"
+      },
+      {
+        "command": "aiSupervisor.checkApiCosts",
+        "title": "Check API Costs",
+        "category": "AI Supervisor",
+        "icon": "$(credit-card)"
+      },
+      {
+        "command": "aiSupervisor.testGuardianConnection",
+        "title": "Test Guardian Connection",
+        "category": "AI Supervisor",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "aiSupervisor.viewModelDetection",
+        "title": "View Model Detection",
+        "category": "AI Supervisor",
+        "icon": "$(eye)"
       }
     ],
     "viewsContainers": {
@@ -209,6 +239,149 @@
           "type": "boolean",
           "default": true,
           "description": "Enable background analysis of code changes (Premium)"
+        },
+        "aiSupervisor.guardian.provider": {
+          "type": "string",
+          "enum": [
+            "openai",
+            "anthropic",
+            "google",
+            "ollama"
+          ],
+          "default": "openai",
+          "description": "AI provider for guardian analysis"
+        },
+        "aiSupervisor.guardian.model": {
+          "type": "string",
+          "default": "gpt-4o",
+          "description": "Model to use for guardian analysis (must be different from coding model)"
+        },
+        "aiSupervisor.guardian.enableAnalysis": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable AI-powered guardian analysis of code changes"
+        },
+        "aiSupervisor.guardian.autoAnalyze": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically analyze code changes (requires active goals)"
+        },
+        "aiSupervisor.guardian.costBudgetMonthly": {
+          "type": "number",
+          "default": 10,
+          "minimum": 0,
+          "maximum": 1000,
+          "description": "Monthly budget for AI API costs (in USD)"
+        },
+        "aiSupervisor.guardian.openaiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "OpenAI API key (stored securely)"
+        },
+        "aiSupervisor.guardian.anthropicApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Anthropic API key (stored securely)"
+        },
+        "aiSupervisor.guardian.googleApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Google API key (stored securely)"
+        },
+        "aiSupervisor.guardian.ollamaEndpoint": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Ollama endpoint URL (for local models)"
+        },
+        "aiSupervisor.guardian.openai.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "OpenAI API Key for GPT-4/GPT-4o guardian analysis"
+        },
+        "aiSupervisor.guardian.openai.model": {
+          "type": "string",
+          "enum": [
+            "gpt-4",
+            "gpt-4-turbo",
+            "gpt-4o"
+          ],
+          "default": "gpt-4o",
+          "description": "OpenAI model to use for guardian analysis"
+        },
+        "aiSupervisor.guardian.anthropic.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Anthropic API Key for Claude guardian analysis"
+        },
+        "aiSupervisor.guardian.anthropic.model": {
+          "type": "string",
+          "enum": [
+            "claude-3-5-sonnet-20241022",
+            "claude-3-opus-20240229",
+            "claude-3-haiku-20240307"
+          ],
+          "default": "claude-3-5-sonnet-20241022",
+          "description": "Anthropic Claude model to use for guardian analysis"
+        },
+        "aiSupervisor.guardian.google.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Google API Key for Gemini guardian analysis"
+        },
+        "aiSupervisor.guardian.google.model": {
+          "type": "string",
+          "enum": [
+            "gemini-1.5-pro-latest",
+            "gemini-1.5-flash-latest"
+          ],
+          "default": "gemini-1.5-pro-latest",
+          "description": "Google Gemini model to use for guardian analysis"
+        },
+        "aiSupervisor.guardian.ollama.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Ollama for local, private guardian analysis"
+        },
+        "aiSupervisor.guardian.ollama.endpoint": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Ollama API endpoint"
+        },
+        "aiSupervisor.guardian.ollama.model": {
+          "type": "string",
+          "enum": [
+            "llama3.1:70b",
+            "llama3.1:8b",
+            "deepseek-coder:33b",
+            "phi3:14b",
+            "codellama:34b"
+          ],
+          "default": "llama3.1:70b",
+          "description": "Ollama model to use for guardian analysis"
+        },
+        "aiSupervisor.storage.format": {
+          "type": "string",
+          "enum": [
+            "toml",
+            "json"
+          ],
+          "default": "toml",
+          "description": "Storage format for goals and analyses (TOML recommended)"
+        },
+        "aiSupervisor.guardian.autoDetectCodingModel": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically detect which AI model is being used for coding"
+        },
+        "aiSupervisor.guardian.cacheEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Cache AI guardian responses to avoid duplicate API calls"
+        },
+        "aiSupervisor.guardian.cacheMaxAge": {
+          "type": "number",
+          "default": 3600,
+          "description": "Maximum age of cached responses in seconds (default: 1 hour)"
         }
       }
     },
@@ -279,6 +452,11 @@
     "@guard-rail/ai-supervisor": "file:../ai-supervisor",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "@anthropic-ai/sdk": "^0.27.0",
+    "openai": "^4.58.0",
+    "@google/generative-ai": "^0.17.0",
+    "ollama": "^0.5.0",
+    "@iarna/toml": "^2.2.5"
   }
 }

@@ -6,6 +6,8 @@ import { AlertManager } from './notifications/AlertManager';
 import { ActivityMonitorPanel } from './panels/ActivityMonitor';
 import { GoalManagerPanel } from './panels/GoalManager';
 import { ChangeInspectorPanel } from './panels/ChangeInspector';
+import { GuardianIntegration } from './guardian/GuardianIntegration';
+import { ProjectGoal } from './guardian/GuardianAnalyzer';
 // import { SupervisorEngine } from 'ai-supervisor';
 
 /**
@@ -13,13 +15,14 @@ import { ChangeInspectorPanel } from './panels/ChangeInspector';
  */
 export class ExtensionContext {
     private static instance: ExtensionContext;
-    
+
     public readonly context: vscode.ExtensionContext;
     public fileWatcher: FileWatcher | undefined;
     public aiDetector: AIDetector | undefined;
     public alertManager: AlertManager | undefined;
+    public guardianIntegration: GuardianIntegration | undefined;
     // public supervisorEngine: SupervisorEngine | undefined;
-    
+
     private monitoringActive: boolean = true;
 
     private constructor(context: vscode.ExtensionContext) {
@@ -91,6 +94,27 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         // Initialize alert manager
         extContext.alertManager = new AlertManager(context);
 
+        // Initialize guardian integration
+        extContext.guardianIntegration = new GuardianIntegration(
+            context,
+            extContext.alertManager
+        );
+
+        // Connect guardian to file watcher
+        extContext.fileWatcher.onDidChangeFile(async (changeEvent) => {
+            // Get active goals from storage
+            const goals = context.workspaceState.get<ProjectGoal[]>('aiSupervisor.goals', []);
+            const activeGoals = goals.filter(g => !(g as any).completed);
+
+            // Run guardian analysis
+            if (extContext.guardianIntegration && activeGoals.length > 0) {
+                await extContext.guardianIntegration.handleFileChange(
+                    changeEvent,
+                    activeGoals
+                );
+            }
+        });
+
         console.log('Core services initialized successfully');
     } catch (error) {
         console.error('Failed to initialize core services:', error);
@@ -144,7 +168,13 @@ function registerCommands(context: vscode.ExtensionContext): void {
             if (alertManager) {
                 await alertManager.showAlertHistoryQuickPick();
             }
-        })
+        }),
+        // Guardian commands
+        vscode.commands.registerCommand('aiSupervisor.configureGuardianModel', () => commands.configureGuardianModel()),
+        vscode.commands.registerCommand('aiSupervisor.viewAnalysisHistory', () => commands.viewAnalysisHistory()),
+        vscode.commands.registerCommand('aiSupervisor.checkApiCosts', () => commands.checkApiCosts()),
+        vscode.commands.registerCommand('aiSupervisor.testGuardianConnection', () => commands.testGuardianConnection()),
+        vscode.commands.registerCommand('aiSupervisor.viewModelDetection', () => commands.viewModelDetection())
     );
 
     console.log('Commands registered successfully');

@@ -1,0 +1,106 @@
+# AI Supervisor - Code Changes
+# Generated: 2024-11-21T16:00:00Z
+
+[[changes]]
+id = "change-123"
+file_path = "/workspace/src/api/auth/login.ts"
+file_name = "login.ts"
+timestamp = "2024-11-21T15:25:00Z"
+change_type = "create"
+status = "approved"
+additions = 87
+deletions = 0
+is_reversal = false
+is_contradiction = false
+detected_ai_tool = "claude-3-5-sonnet"
+
+[[changes]]
+id = "change-124"
+file_path = "/workspace/src/api/users/create.ts"
+file_name = "create.ts"
+timestamp = "2024-11-21T15:30:00Z"
+change_type = "create"
+status = "rejected"
+additions = 45
+deletions = 0
+is_reversal = false
+is_contradiction = false
+detected_ai_tool = "claude-3-5-sonnet"
+
+[[changes]]
+id = "change-125"
+file_path = "/workspace/src/services/UserService.ts"
+file_name = "UserService.ts"
+timestamp = "2024-11-21T15:35:00Z"
+change_type = "modify"
+status = "approved"
+additions = 23
+deletions = 15
+is_reversal = false
+is_contradiction = false
+detected_ai_tool = "gpt-4o"
+
+[[changes]]
+id = "change-126"
+file_path = "/workspace/tests/security/auth.test.ts"
+file_name = "auth.test.ts"
+timestamp = "2024-11-21T15:40:00Z"
+change_type = "delete"
+status = "rejected"
+additions = 0
+deletions = 156
+is_reversal = false
+is_contradiction = false
+detected_ai_tool = "github-copilot"
+
+[[changes]]
+id = "change-127"
+file_path = "/workspace/src/config/database.ts"
+file_name = "database.ts"
+timestamp = "2024-11-21T15:45:00Z"
+change_type = "modify"
+status = "pending"
+additions = 12
+deletions = 8
+is_reversal = false
+is_contradiction = false
+detected_ai_tool = "cursor"
+
+[[changes]]
+id = "change-128"
+file_path = "/workspace/src/services/OrderService.ts"
+file_name = "OrderService.ts"
+timestamp = "2024-11-21T15:50:00Z"
+change_type = "modify"
+status = "rejected"
+additions = 5
+deletions = 32
+is_reversal = true
+is_contradiction = true
+detected_ai_tool = "claude-3-5-sonnet"
+
+[[changes]]
+id = "change-129"
+file_path = "/workspace/src/middleware/validator.ts"
+file_name = "validator.ts"
+timestamp = "2024-11-21T15:55:00Z"
+change_type = "create"
+status = "approved"
+additions = 134
+deletions = 0
+is_reversal = false
+is_contradiction = false
+detected_ai_tool = "continue"
+
+[[changes]]
+id = "change-130"
+file_path = "/workspace/src/api/admin/deleteAllUsers.ts"
+file_name = "deleteAllUsers.ts"
+timestamp = "2024-11-21T16:00:00Z"
+change_type = "create"
+status = "rejected"
+additions = 28
+deletions = 0
+is_reversal = false
+is_contradiction = false
+detected_ai_tool = "claude-3-5-sonnet"

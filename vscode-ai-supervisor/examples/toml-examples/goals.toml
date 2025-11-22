@@ -1,0 +1,221 @@
+# Example Project Goals Configuration
+# File: .vscode/ai-supervisor/goals.toml
+
+version = "1.0"
+created = 2024-11-21T10:00:00Z
+updated = 2024-11-21T15:30:00Z
+
+# ============================================================================
+# ACTIVE GOAL 1: User Authentication
+# ============================================================================
+
+[[goal]]
+id = "goal-001"
+title = "Implement User Authentication"
+description = """
+Build a secure authentication system with JWT tokens.
+Must support login, logout, token refresh, and password reset.
+"""
+status = "active"
+priority = "high"
+created = 2024-11-21T10:00:00Z
+updated = 2024-11-21T15:30:00Z
+
+# Constraints - Hard requirements that must not be violated
+[[goal.constraints]]
+type = "architecture"
+rule = "no_database_writes_in_auth"
+description = "Authentication handlers must not write to database directly"
+severity = "error"
+rationale = "Keeps auth fast and prevents DB failures from blocking logins"
+
+[[goal.constraints]]
+type = "security"
+rule = "use_jwt_tokens"
+description = "Must use JWT for session management, not server-side sessions"
+severity = "error"
+rationale = "Stateless authentication for horizontal scaling"
+
+[[goal.constraints]]
+type = "security"
+rule = "no_plaintext_passwords"
+description = "Passwords must be hashed with bcrypt (min 10 rounds)"
+severity = "error"
+rationale = "Industry standard password security"
+
+[[goal.constraints]]
+type = "performance"
+rule = "max_response_time_100ms"
+description = "Auth endpoints must respond within 100ms (p95)"
+severity = "warning"
+rationale = "User experience requirement"
+
+# Acceptance criteria - What defines "done"
+[[goal.acceptance]]
+criterion = "User can login with username/password"
+status = "completed"
+verified = true
+completed = 2024-11-21T14:00:00Z
+
+[[goal.acceptance]]
+criterion = "JWT tokens are properly signed and validated"
+status = "completed"
+verified = true
+completed = 2024-11-21T14:30:00Z
+
+[[goal.acceptance]]
+criterion = "Token refresh endpoint works correctly"
+status = "in_progress"
+verified = false
+
+[[goal.acceptance]]
+criterion = "Password reset flow implemented"
+status = "pending"
+verified = false
+
+[[goal.acceptance]]
+criterion = "All auth endpoints have >95% test coverage"
+status = "pending"
+verified = false
+
+# Scope - What files this goal covers
+[goal.scope]
+includes = [
+    "src/auth/**/*.ts",
+    "src/middleware/auth.ts",
+    "src/middleware/jwt.ts"
+]
+excludes = [
+    "src/auth/**/*.test.ts",
+    "src/auth/**/*.spec.ts"
+]
+
+# ============================================================================
+# ACTIVE GOAL 2: API Rate Limiting
+# ============================================================================
+
+[[goal]]
+id = "goal-002"
+title = "Add Rate Limiting to Public APIs"
+description = """
+Implement rate limiting middleware for all public API endpoints.
+Prevent abuse and ensure fair usage across all users.
+"""
+status = "active"
+priority = "medium"
+created = 2024-11-21T11:00:00Z
+updated = 2024-11-21T12:00:00Z
+
+[[goal.constraints]]
+type = "performance"
+rule = "use_redis_for_rate_limits"
+description = "Rate limit counters must be stored in Redis, not in-memory"
+severity = "error"
+rationale = "In-memory storage doesn't work with multiple server instances"
+
+[[goal.constraints]]
+type = "architecture"
+rule = "rate_limit_before_auth"
+description = "Rate limiting must happen before authentication check"
+severity = "warning"
+rationale = "Prevent authentication endpoint abuse"
+
+[[goal.acceptance]]
+criterion = "Rate limiting middleware created"
+status = "completed"
+verified = true
+
+[[goal.acceptance]]
+criterion = "Applied to all public API routes"
+status = "in_progress"
+verified = false
+
+[[goal.acceptance]]
+criterion = "Returns proper 429 status with Retry-After header"
+status = "pending"
+verified = false
+
+[goal.scope]
+includes = ["src/middleware/rate-limit.ts", "src/routes/**/*.ts"]
+excludes = ["src/routes/internal/**/*.ts"]
+
+# ============================================================================
+# COMPLETED GOAL: Project Setup
+# ============================================================================
+
+[[goal]]
+id = "goal-003"
+title = "Initial Project Structure Setup"
+description = "Set up TypeScript project with Express, ESLint, and testing framework"
+status = "completed"
+priority = "high"
+created = 2024-11-20T09:00:00Z
+completed = 2024-11-20T16:00:00Z
+
+[[goal.acceptance]]
+criterion = "TypeScript configured with strict mode"
+status = "completed"
+verified = true
+
+[[goal.acceptance]]
+criterion = "ESLint and Prettier configured"
+status = "completed"
+verified = true
+
+[[goal.acceptance]]
+criterion = "Jest testing framework set up"
+status = "completed"
+verified = true
+
+[goal.scope]
+includes = ["package.json", "tsconfig.json", ".eslintrc.js", "jest.config.js"]
+excludes = []
+
+# ============================================================================
+# PAUSED GOAL: Payment Integration
+# ============================================================================
+
+[[goal]]
+id = "goal-004"
+title = "Stripe Payment Integration"
+description = "Integrate Stripe for payment processing"
+status = "paused"
+priority = "low"
+created = 2024-11-19T10:00:00Z
+paused_reason = "Waiting for business team to finalize payment requirements"
+
+[[goal.constraints]]
+type = "security"
+rule = "no_card_data_storage"
+description = "Never store credit card details - use Stripe tokens only"
+severity = "error"
+
+[[goal.acceptance]]
+criterion = "Stripe SDK integrated"
+status = "pending"
+verified = false
+
+[goal.scope]
+includes = ["src/payments/**/*.ts"]
+excludes = []
+
+# ============================================================================
+# METADATA
+# ============================================================================
+
+# Project-level settings
+[project]
+name = "E-commerce API"
+version = "1.0.0"
+team = "Backend Team"
+repository = "https://github.com/your-org/ecommerce-api"
+
+# Goal statistics (auto-updated by extension)
+[stats]
+total_goals = 4
+active_goals = 2
+completed_goals = 1
+paused_goals = 1
+total_constraints = 7
+violated_constraints = 0
+last_violation = 2024-11-20T14:30:00Z

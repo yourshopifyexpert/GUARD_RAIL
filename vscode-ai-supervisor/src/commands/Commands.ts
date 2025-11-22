@@ -3,12 +3,26 @@ import { ExtensionContext } from '../extension';
 import { ActivityMonitorPanel } from '../panels/ActivityMonitor';
 import { GoalManagerPanel } from '../panels/GoalManager';
 import { ChangeInspectorPanel } from '../panels/ChangeInspector';
+import { GuardianSettings } from '../guardian/GuardianSettings';
+import { CostTracker } from '../guardian/CostTracker';
+import { TomlStorage } from '../guardian/TomlStorage';
+import { ModelDetector } from '../guardian/ModelDetector';
 
 /**
  * Centralized command handler for all AI Supervisor commands
  */
 export class Commands {
-    constructor(private context: vscode.ExtensionContext) {}
+    private guardianSettings: GuardianSettings;
+    private costTracker: CostTracker;
+    private tomlStorage: TomlStorage;
+    private modelDetector: ModelDetector;
+
+    constructor(private context: vscode.ExtensionContext) {
+        this.guardianSettings = new GuardianSettings(context);
+        this.costTracker = new CostTracker(context);
+        this.tomlStorage = new TomlStorage();
+        this.modelDetector = new ModelDetector();
+    }
 
     /**
      * Show the Activity Monitor panel
@@ -181,6 +195,101 @@ export class Commands {
      */
     public async openSettings(): Promise<void> {
         await vscode.commands.executeCommand('workbench.action.openSettings', '@ext:your-publisher-name.ai-supervisor');
+    }
+
+    /**
+     * Configure Guardian Model
+     */
+    public async configureGuardianModel(): Promise<void> {
+        await this.guardianSettings.openSettingsUI();
+    }
+
+    /**
+     * View AI Analysis History
+     */
+    public async viewAnalysisHistory(): Promise<void> {
+        await this.tomlStorage.showAnalysisHistory();
+    }
+
+    /**
+     * Check API Costs
+     */
+    public async checkApiCosts(): Promise<void> {
+        await this.costTracker.showCostSummary();
+    }
+
+    /**
+     * Test Guardian Connection
+     */
+    public async testGuardianConnection(): Promise<void> {
+        await vscode.window.withProgress(
+            {
+                location: vscode.ProgressLocation.Notification,
+                title: 'Testing Guardian AI connection...',
+                cancellable: false
+            },
+            async () => {
+                const result = await this.guardianSettings.testConnection();
+
+                if (result.success) {
+                    vscode.window.showInformationMessage(
+                        `Guardian AI: ${result.message}`,
+                        'View Settings'
+                    ).then(action => {
+                        if (action === 'View Settings') {
+                            this.configureGuardianModel();
+                        }
+                    });
+                } else {
+                    vscode.window.showErrorMessage(
+                        `Guardian AI: ${result.message}`,
+                        'Configure'
+                    ).then(action => {
+                        if (action === 'Configure') {
+                            this.configureGuardianModel();
+                        }
+                    });
+                }
+            }
+        );
+    }
+
+    /**
+     * View Model Detection Info
+     */
+    public async viewModelDetection(): Promise<void> {
+        const detected = this.modelDetector.getLastDetected();
+
+        if (!detected) {
+            const message = 'No coding model detected yet. Make some code changes with your AI assistant.';
+            vscode.window.showInformationMessage(message);
+            return;
+        }
+
+        const summary = this.modelDetector.getDetectionSummary();
+        const guardianModel = this.guardianSettings.getModel();
+        const provider = this.guardianSettings.getProvider();
+
+        const message = `**Coding Model Detection**
+
+${summary}
+
+**Guardian Configuration**
+- Provider: ${provider}
+- Model: ${guardianModel}
+
+**Status**: ${detected.modelName !== guardianModel ? 'Different models ✓' : 'Same model - Consider changing guardian model'}`;
+
+        const action = await vscode.window.showInformationMessage(
+            message,
+            { modal: true },
+            'Configure Guardian',
+            'Close'
+        );
+
+        if (action === 'Configure Guardian') {
+            await this.configureGuardianModel();
+        }
     }
 
     /**

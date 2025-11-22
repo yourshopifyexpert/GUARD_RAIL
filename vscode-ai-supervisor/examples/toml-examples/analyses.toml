@@ -1,0 +1,469 @@
+# Example Guardian Analysis Results
+# File: .vscode/ai-supervisor/analyses.toml
+
+version = "1.0"
+last_updated = 2024-11-21T16:00:00Z
+
+# ============================================================================
+# ANALYSIS 1: Constraint Violation Caught
+# ============================================================================
+
+[[analysis]]
+id = "20241121-153045-abc123"
+timestamp = 2024-11-21T15:30:45Z
+
+# File information
+file = "src/auth/login.ts"
+lines = "23-27"
+change_type = "modification"
+change_hash = "a1b2c3d4e5f6"
+
+# Model information
+coding_model = "claude-3-5-sonnet-20241022"
+coding_model_provider = "anthropic"
+guardian_model = "gpt-4o"
+guardian_provider = "openai"
+
+# Analysis results
+[analysis.result]
+aligned = false
+confidence = 0.94
+severity = "high"
+execution_time_ms = 1250
+
+# Deviation details
+[analysis.deviation]
+type = "constraint_violation"
+constraint_id = "no_database_writes_in_auth"
+detected = true
+violated = true
+
+# Guardian's reasoning
+[analysis.reasoning]
+summary = "Database write operation added to authentication handler"
+details = """
+GPT-4o Analysis:
+
+This code adds a database write operation in the login handler:
+
+```typescript
+await db.users.update({
+    id: user.id,
+    lastLogin: new Date(),
+    loginCount: user.loginCount + 1
+});
+```
+
+CONSTRAINT VIOLATED:
+"no_database_writes_in_auth" - Authentication handlers must not write to database
+
+WHY THIS MATTERS:
+1. Performance: Database writes add 50-200ms latency to login
+2. Reliability: Database failures would block valid user logins
+3. Architecture: Violates your stated stateless auth design
+4. Concurrency: No transaction means race conditions on loginCount
+
+CLAUDE'S INTENTION (good, but wrong location):
+Claude wanted to track user login activity - valuable feature!
+However, the implementation violates your architectural constraints.
+
+RECOMMENDED FIX:
+Use event-driven architecture to decouple login tracking:
+
+```typescript
+// In login handler - NO database write
+async function login(username: string, password: string) {
+    const user = await validateCredentials(username, password);
+    const token = jwt.sign({ userId: user.id }, SECRET);
+
+    // Emit event instead of writing to DB
+    eventBus.emit('user.logged-in', {
+        userId: user.id,
+        timestamp: new Date()
+    });
+
+    return { token };
+}
+
+// In separate background service
+eventBus.on('user.logged-in', async (event) => {
+    try {
+        await db.users.update({
+            id: event.userId,
+            lastLogin: event.timestamp
+        });
+    } catch (error) {
+        // Log error, but don't fail login
+        logger.error('Failed to update lastLogin', error);
+    }
+});
+```
+
+BENEFITS:
+✓ Maintains constraint compliance
+✓ Login still works even if DB update fails
+✓ Better performance (async processing)
+✓ Easier to test and maintain
+"""
+
+# Code snippets involved
+[[analysis.code_snippets]]
+type = "violation"
+content = """
+await db.users.update({
+    id: user.id,
+    lastLogin: new Date(),
+    loginCount: user.loginCount + 1
+});
+"""
+line_start = 23
+line_end = 27
+severity = "high"
+
+# Suggestions from guardian
+[[analysis.suggestions]]
+priority = "high"
+action = "refactor"
+title = "Move database write to event-driven service"
+description = "Extract login tracking to separate async service using event emitter"
+estimated_effort_minutes = 15
+impact = "Resolves constraint violation and improves architecture"
+
+[[analysis.suggestions]]
+priority = "medium"
+action = "test"
+title = "Add tests for event-driven login tracking"
+description = "Ensure login tracking events are emitted and processed correctly"
+estimated_effort_minutes = 30
+impact = "Ensures refactored solution works correctly"
+
+# Cost tracking for this analysis
+[analysis.cost]
+input_tokens = 2450
+output_tokens = 856
+total_tokens = 3306
+cost_usd = 0.0147
+provider = "openai"
+model = "gpt-4o"
+pricing_per_1m_input = 2.50
+pricing_per_1m_output = 10.00
+
+# User action taken
+[analysis.user_action]
+action = "accepted"
+timestamp = 2024-11-21T15:35:00Z
+time_to_respond_seconds = 315
+comment = "Excellent catch! Implemented event-driven approach as suggested."
+implemented_fix = true
+
+# ============================================================================
+# ANALYSIS 2: Security Vulnerability Detected
+# ============================================================================
+
+[[analysis]]
+id = "20241121-140530-def456"
+timestamp = 2024-11-21T14:05:30Z
+
+file = "src/api/search.ts"
+lines = "12-15"
+change_type = "new_code"
+change_hash = "f6e5d4c3b2a1"
+
+coding_model = "gpt-4"
+coding_model_provider = "openai"
+guardian_model = "claude-3-5-sonnet-20241022"
+guardian_provider = "anthropic"
+
+[analysis.result]
+aligned = false
+confidence = 0.98
+severity = "critical"
+execution_time_ms = 1850
+
+[analysis.deviation]
+type = "security_vulnerability"
+vulnerability_type = "sql_injection"
+detected = true
+cwe_id = "CWE-89"
+
+[analysis.reasoning]
+summary = "SQL injection vulnerability in user search endpoint"
+details = """
+Claude 3.5 Sonnet Analysis:
+
+CRITICAL SECURITY VULNERABILITY: SQL Injection (CWE-89)
+
+VULNERABLE CODE:
+```typescript
+const sql = `SELECT * FROM users WHERE name LIKE '%${query}%'`;
+return await db.execute(sql);
+```
+
+ATTACK VECTOR:
+An attacker can inject arbitrary SQL by manipulating the query parameter:
+
+Example attack:
+  query = "'; DROP TABLE users; --"
+
+Resulting SQL:
+  SELECT * FROM users WHERE name LIKE '%'; DROP TABLE users; --%'
+
+This would DELETE YOUR ENTIRE USERS TABLE.
+
+GPT-4'S MISTAKE:
+GPT-4 generated a basic search function but used string interpolation
+instead of parameterized queries. This is a textbook SQL injection flaw.
+
+WHY THIS HAPPENED:
+String interpolation is simpler to write, but creates critical security holes.
+The model prioritized code simplicity over security.
+
+IMMEDIATE FIX REQUIRED:
+```typescript
+// Use parameterized query
+const sql = 'SELECT * FROM users WHERE name LIKE ?';
+const params = [`%${query}%`];
+return await db.execute(sql, params);
+```
+
+OR BETTER - Use ORM:
+```typescript
+return await db.users.findAll({
+    where: {
+        name: {
+            [Op.like]: `%${query}%`
+        }
+    }
+});
+```
+
+ADDITIONAL RECOMMENDATIONS:
+1. Input validation: Sanitize query parameter
+2. Rate limiting: Prevent enumeration attacks
+3. Add logging: Track search queries for abuse detection
+4. Security audit: Review all other database queries
+"""
+
+[[analysis.code_snippets]]
+type = "vulnerability"
+content = """
+const sql = `SELECT * FROM users WHERE name LIKE '%${query}%'`;
+return await db.execute(sql);
+"""
+line_start = 12
+line_end = 13
+severity = "critical"
+cwe_id = "CWE-89"
+
+[[analysis.suggestions]]
+priority = "critical"
+action = "fix"
+title = "Replace with parameterized query IMMEDIATELY"
+description = "Use parameterized queries to prevent SQL injection"
+estimated_effort_minutes = 5
+impact = "Prevents database compromise"
+
+[[analysis.suggestions]]
+priority = "high"
+action = "test"
+title = "Add security tests for SQL injection"
+description = "Create tests that attempt SQL injection to verify fix"
+estimated_effort_minutes = 20
+impact = "Ensures vulnerability is fixed and prevents regression"
+
+[analysis.cost]
+input_tokens = 1800
+output_tokens = 920
+total_tokens = 2720
+cost_usd = 0.0192
+provider = "anthropic"
+model = "claude-3-5-sonnet-20241022"
+pricing_per_1m_input = 3.00
+pricing_per_1m_output = 15.00
+
+[analysis.user_action]
+action = "accepted"
+timestamp = 2024-11-21T14:08:00Z
+time_to_respond_seconds = 150
+comment = "Critical fix applied immediately. Added security tests."
+implemented_fix = true
+
+# ============================================================================
+# ANALYSIS 3: Performance Issue (N+1 Query)
+# ============================================================================
+
+[[analysis]]
+id = "20241121-112000-ghi789"
+timestamp = 2024-11-21T11:20:00Z
+
+file = "src/api/users.ts"
+lines = "45-52"
+change_type = "modification"
+
+coding_model = "claude-3-5-sonnet-20241022"
+guardian_model = "gpt-4o"
+guardian_provider = "openai"
+
+[analysis.result]
+aligned = false
+confidence = 0.91
+severity = "high"
+execution_time_ms = 980
+
+[analysis.deviation]
+type = "performance_issue"
+issue_type = "n_plus_one_query"
+detected = true
+estimated_impact = "10x slowdown at 100 users"
+
+[analysis.reasoning]
+summary = "N+1 query problem will cause severe performance degradation"
+details = """
+GPT-4o Analysis:
+
+PERFORMANCE ISSUE: N+1 Query Problem
+
+PROBLEMATIC CODE:
+```typescript
+const users = await db.users.findAll();
+for (const user of users) {
+    user.posts = await db.posts.findByUserId(user.id);
+}
+```
+
+PERFORMANCE IMPACT:
+With N users, this executes N+1 database queries:
+- 1 query to fetch all users
+- N queries to fetch posts for each user
+
+Example with 100 users:
+  = 101 database queries
+  = ~1 second of DB time (assuming 10ms per query)
+
+At 1000 users:
+  = 1001 queries
+  = ~10 seconds total time
+  = UNACCEPTABLE
+
+Claude's logic is correct but implementation is inefficient.
+
+OPTIMIZED SOLUTION:
+```typescript
+// Single query with JOIN
+const users = await db.users.findAll({
+    include: [{
+        model: db.posts,
+        as: 'posts'
+    }]
+});
+
+// OR use DataLoader pattern for GraphQL
+const users = await db.users.findAll();
+const userIds = users.map(u => u.id);
+const posts = await db.posts.findByUserIds(userIds);
+
+// Map posts to users
+users.forEach(user => {
+    user.posts = posts.filter(p => p.userId === user.id);
+});
+```
+
+BENCHMARKS:
+- Current: 1000ms for 100 users
+- Optimized: 50ms for 100 users
+= 20x faster!
+"""
+
+[[analysis.suggestions]]
+priority = "high"
+action = "refactor"
+title = "Use JOIN or DataLoader pattern"
+description = "Fetch all posts in single query using JOIN or batch loading"
+estimated_effort_minutes = 10
+impact = "20x performance improvement"
+
+[analysis.cost]
+input_tokens = 1650
+output_tokens = 720
+total_tokens = 2370
+cost_usd = 0.0113
+provider = "openai"
+model = "gpt-4o"
+
+[analysis.user_action]
+action = "accepted"
+timestamp = 2024-11-21T11:25:00Z
+time_to_respond_seconds = 300
+comment = "Refactored to use JOIN. Performance tests show 18x improvement!"
+implemented_fix = true
+
+# ============================================================================
+# ANALYSIS 4: Aligned - No Issues
+# ============================================================================
+
+[[analysis]]
+id = "20241121-100000-jkl012"
+timestamp = 2024-11-21T10:00:00Z
+
+file = "src/utils/validation.ts"
+lines = "1-25"
+change_type = "new_code"
+
+coding_model = "gpt-4o"
+guardian_model = "claude-3-5-sonnet-20241022"
+guardian_provider = "anthropic"
+
+[analysis.result]
+aligned = true
+confidence = 0.88
+severity = "none"
+execution_time_ms = 650
+
+[analysis.reasoning]
+summary = "Code looks good - follows best practices"
+details = """
+Claude 3.5 Analysis:
+
+✓ CODE ALIGNED WITH GOALS
+
+This input validation utility follows security and code quality best practices:
+
+POSITIVE FINDINGS:
+1. Comprehensive input validation
+2. Clear error messages
+3. TypeScript types properly used
+4. No security vulnerabilities detected
+5. Good test coverage included
+
+MINOR SUGGESTIONS (non-blocking):
+- Consider adding JSDoc comments for better documentation
+- Could extract regex patterns to constants for reusability
+
+Overall: Well-written, production-ready code.
+"""
+
+[analysis.cost]
+input_tokens = 850
+output_tokens = 180
+total_tokens = 1030
+cost_usd = 0.0047
+provider = "anthropic"
+model = "claude-3-5-sonnet-20241022"
+
+[analysis.user_action]
+action = "acknowledged"
+timestamp = 2024-11-21T10:02:00Z
+comment = "Thanks for the confirmation!"
+
+# ============================================================================
+# SUMMARY STATISTICS
+# ============================================================================
+
+[summary]
+total_analyses = 4
+violations_found = 2
+security_issues = 1
+performance_issues = 1
+aligned_analyses = 1
+average_confidence = 0.9275
+total_cost_usd = 0.0499

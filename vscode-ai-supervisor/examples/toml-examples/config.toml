@@ -1,0 +1,319 @@
+# Example Extension Configuration
+# File: .vscode/ai-supervisor/config.toml
+
+version = "1.0"
+created = 2024-11-21T09:00:00Z
+last_updated = 2024-11-21T15:00:00Z
+
+# ============================================================================
+# GUARDIAN CONFIGURATION
+# ============================================================================
+
+[guardian]
+# Main guardian model
+provider = "openai"
+model = "gpt-4o"
+
+# Auto-select guardian based on coding model
+auto_select = true
+
+# Analysis depth: "quick", "standard", "thorough"
+analysis_depth = "standard"
+
+# Enable multi-guardian analysis (Premium feature)
+multi_guardian_enabled = false
+
+# Provider Configurations
+# Note: API keys are encrypted and stored separately
+
+[guardian.providers.openai]
+enabled = true
+api_key_hash = "sha256:abc123def456..."  # Encrypted, not plaintext
+endpoint = "https://api.openai.com/v1"
+timeout_seconds = 30
+retry_attempts = 3
+last_used = 2024-11-21T15:30:45Z
+
+[guardian.providers.anthropic]
+enabled = true
+api_key_hash = "sha256:def456ghi789..."
+endpoint = "https://api.anthropic.com/v1"
+timeout_seconds = 30
+retry_attempts = 3
+last_used = 2024-11-21T14:05:30Z
+
+[guardian.providers.google]
+enabled = false
+api_key_hash = ""
+endpoint = "https://generativelanguage.googleapis.com/v1"
+timeout_seconds = 30
+
+[guardian.providers.ollama]
+enabled = true
+endpoint = "http://localhost:11434"
+timeout_seconds = 60
+default_model = "llama3.1:70b"
+
+[guardian.providers.ollama.settings]
+num_ctx = 4096
+num_gpu = 1
+num_thread = 8
+keep_alive = "5m"
+
+# Model Paairings (which guardian for each coding model)
+[guardian.pairings]
+"claude-3-5-sonnet" = "gpt-4o"
+"claude-3-5-opus" = "gpt-4o"
+"gpt-4" = "claude-3-5-sonnet"
+"gpt-4o" = "claude-3-5-sonnet"
+"gpt-4o-mini" = "claude-3-5-sonnet"
+"github-copilot" = "claude-3-5-sonnet"
+"cursor" = "gemini-pro"
+"continue" = "deepseek-coder"
+"cody" = "gpt-4o"
+
+# Cost Limits
+[guardian.cost_limits]
+enabled = true
+daily_usd = 5.00
+monthly_usd = 50.00
+alert_threshold = 0.8  # Alert at 80% of limit
+auto_pause_at_limit = true
+
+# File-specific guardian models
+[[guardian.file_patterns]]
+pattern = "**/*.auth.ts"
+provider = "openai"
+model = "gpt-4o"
+reason = "Security-critical authentication code"
+
+[[guardian.file_patterns]]
+pattern = "**/*.api.ts"
+provider = "google"
+model = "gemini-pro"
+reason = "API design expertise"
+
+[[guardian.file_patterns]]
+pattern = "**/*.db.ts"
+provider = "anthropic"
+model = "claude-3-5-sonnet"
+reason = "Complex logic and edge cases"
+
+# ============================================================================
+# MONITORING SETTINGS
+# ============================================================================
+
+[monitoring]
+# Enable/disable monitoring
+enabled = true
+
+# Sensitivity: "low", "medium", "high"
+sensitivity = "medium"
+
+# Auto-pause monitoring on critical alerts
+auto_pause_on_alert = false
+
+# Track all file changes, not just AI-generated
+track_all_changes = true
+
+# File patterns to monitor
+include_patterns = [
+    "src/**/*.ts",
+    "src/**/*.js",
+    "src/**/*.tsx",
+    "src/**/*.jsx"
+]
+
+exclude_patterns = [
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**"
+]
+
+# Minimum change size to trigger analysis (in lines)
+min_change_lines = 3
+
+# Debounce time before analyzing (milliseconds)
+debounce_ms = 1000
+
+# ============================================================================
+# ALERT SETTINGS
+# ============================================================================
+
+[alerts]
+# Show VS Code notifications
+show_notifications = true
+
+# Severity filter: "all", "warning", "error", "critical"
+severity_filter = "all"
+
+# Enable sound alerts
+sound_enabled = false
+
+# Desktop notifications (outside VS Code)
+desktop_notifications = true
+
+# Auto-dismiss info alerts after N seconds (0 = never)
+auto_dismiss_seconds = 10
+
+# Alert channels
+[alerts.channels]
+vscode_notification = true
+status_bar = true
+activity_monitor = true
+output_channel = true
+
+# Alert actions (quick responses)
+[alerts.actions]
+allow_once = true
+allow_always = true
+reject_once = true
+reject_always = true
+pause_monitoring = true
+update_goals = true
+view_details = true
+
+# ============================================================================
+# STORAGE SETTINGS
+# ============================================================================
+
+[storage]
+# Storage location: "workspace", "global", "custom"
+location = "workspace"
+
+# Custom path (if location = "custom")
+custom_path = ""
+
+# Data retention in days (0 = forever)
+retention_days = 30
+
+# Auto-cleanup old data
+auto_cleanup = true
+
+# Compress old analyses
+compress_old_analyses = true
+
+# Maximum storage size in MB
+max_size_mb = 100
+
+# Backup settings
+[storage.backup]
+enabled = true
+frequency = "daily"  # "daily", "weekly", "never"
+keep_backups = 7
+backup_location = ".vscode/ai-supervisor/backups"
+
+# ============================================================================
+# UI PREFERENCES
+# ============================================================================
+
+[ui]
+# Theme: "auto", "light", "dark"
+theme = "auto"
+
+# Show welcome message on first activation
+show_welcome = true
+
+# Activity monitor default view: "timeline", "files", "alerts"
+default_view = "timeline"
+
+# Auto-refresh interval (seconds)
+auto_refresh_seconds = 5
+
+# Compact mode (less spacing, more content)
+compact_mode = false
+
+# Sidebar position: "left", "right"
+sidebar_position = "left"
+
+# ============================================================================
+# ADVANCED SETTINGS
+# ============================================================================
+
+[advanced]
+# Enable experimental features
+experimental_features = false
+
+# Debug logging
+debug_logging = false
+
+# Log file location
+log_file = ".vscode/ai-supervisor/debug.log"
+
+# Performance monitoring
+performance_monitoring = true
+
+# Cache guardian responses (faster for similar code)
+cache_enabled = true
+cache_ttl_minutes = 60
+
+# Parallel analysis (analyze multiple changes simultaneously)
+parallel_analysis = true
+max_parallel_analyses = 3
+
+# ============================================================================
+# INTEGRATIONS
+# ============================================================================
+
+[integrations]
+# Git integration
+[integrations.git]
+enabled = true
+track_commits = true
+track_branches = true
+alert_on_push = false
+
+# Issue tracker integration
+[integrations.issues]
+enabled = false
+provider = ""  # "github", "gitlab", "jira"
+auto_create_issues = false
+
+# Slack notifications
+[integrations.slack]
+enabled = false
+webhook_url = ""
+notify_on_critical = true
+
+# ============================================================================
+# PREMIUM FEATURES
+# ============================================================================
+
+[premium]
+# License status
+activated = false
+license_key = ""
+expires = 2099-12-31T23:59:59Z
+
+# Premium features enabled
+features = []
+
+# Multi-project supervision
+multi_project = false
+
+# Cloud backup
+cloud_backup = false
+
+# Team collaboration
+team_enabled = false
+
+# Custom rules engine
+custom_rules = false
+
+# ============================================================================
+# PROJECT METADATA
+# ============================================================================
+
+[project]
+name = "E-commerce API"
+version = "1.0.0"
+team = "Backend Team"
+repository = "https://github.com/your-org/ecommerce-api"
+
+# Custom metadata
+[project.custom]
+jira_project = "ECOM"
+slack_channel = "#backend-team"
+tech_lead = "john.doe@company.com"
