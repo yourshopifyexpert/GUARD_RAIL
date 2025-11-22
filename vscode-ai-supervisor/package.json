@@ -128,6 +128,69 @@
         "title": "View Model Detection",
         "category": "AI Supervisor",
         "icon": "$(eye)"
+      },
+      {
+        "command": "aiSupervisor.showAdminPanel",
+        "title": "Open Admin Control Panel",
+        "category": "AI Supervisor",
+        "icon": "$(shield)"
+      },
+      {
+        "command": "aiSupervisor.lockCurrentFile",
+        "title": "Lock Current File from AI",
+        "category": "AI Supervisor",
+        "icon": "$(lock)"
+      },
+      {
+        "command": "aiSupervisor.emergencyStop",
+        "title": "EMERGENCY STOP - Halt All AI",
+        "category": "AI Supervisor",
+        "icon": "$(error)"
+      },
+      {
+        "command": "aiSupervisor.setEditMode",
+        "title": "Set Edit Mode (Permissive/Approval/Locked)",
+        "category": "AI Supervisor",
+        "icon": "$(lock)"
+      },
+      {
+        "command": "aiSupervisor.viewBlockHistory",
+        "title": "View Block History",
+        "category": "AI Supervisor",
+        "icon": "$(history)"
+      },
+      {
+        "command": "aiSupervisor.runDemo",
+        "title": "Run Admin Control Demo",
+        "category": "AI Supervisor",
+        "icon": "$(play)"
+      },
+      {
+        "command": "aiSupervisor.runAdminTests",
+        "title": "Run Admin Tests",
+        "category": "AI Supervisor",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "aiSupervisor.lockFileFromTree",
+        "title": "Lock File",
+        "category": "AI Supervisor"
+      },
+      {
+        "command": "aiSupervisor.unlockFileFromTree",
+        "title": "Unlock File",
+        "category": "AI Supervisor"
+      },
+      {
+        "command": "aiSupervisor.viewLockedFileReason",
+        "title": "View Lock Reason",
+        "category": "AI Supervisor"
+      },
+      {
+        "command": "aiSupervisor.refreshLockedFiles",
+        "title": "Refresh",
+        "category": "AI Supervisor",
+        "icon": "$(refresh)"
       }
     ],
     "viewsContainers": {
@@ -156,6 +219,11 @@
           "id": "aiSupervisor.alertsView",
           "name": "Alerts & Issues",
           "icon": "$(warning)"
+        },
+        {
+          "id": "aiSupervisor.lockedFilesView",
+          "name": "Locked Files",
+          "icon": "$(lock)"
         }
       ]
     },
@@ -167,6 +235,10 @@
       {
         "view": "aiSupervisor.goalsView",
         "contents": "Define your project goals to help AI Supervisor detect deviations.\n[Add First Goal](command:aiSupervisor.showGoalManager)"
+      },
+      {
+        "view": "aiSupervisor.lockedFilesView",
+        "contents": "No files are currently locked.\n[Lock a File](command:aiSupervisor.lockCurrentFile)\nLock files to prevent AI from modifying them."
       }
     ],
     "configuration": {
@@ -382,6 +454,129 @@
           "type": "number",
           "default": 3600,
           "description": "Maximum age of cached responses in seconds (default: 1 hour)"
+        },
+        "aiSupervisor.admin.editMode": {
+          "type": "string",
+          "enum": [
+            "permissive",
+            "approval",
+            "locked"
+          ],
+          "default": "approval",
+          "description": "Edit mode: Permissive (allow all), Approval (require approval), Locked (block all AI changes)"
+        },
+        "aiSupervisor.admin.lockedFiles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          },
+          "default": [],
+          "description": "Files locked from AI modifications"
+        },
+        "aiSupervisor.admin.autoBlock": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically block dangerous operations detected by Guardian"
+        },
+        "aiSupervisor.admin.blockSeverityThreshold": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "default": "medium",
+          "description": "Minimum severity level to block operations"
+        },
+        "aiSupervisor.admin.interceptSaves": {
+          "type": "boolean",
+          "default": true,
+          "description": "Intercept file saves to check for dangerous code before allowing"
+        },
+        "aiSupervisor.admin.interceptAutoSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Also intercept auto-saves (may be disruptive)"
+        },
+        "aiSupervisor.admin.interceptCommands": {
+          "type": "boolean",
+          "default": false,
+          "description": "Intercept AI commands (Copilot, Continue, etc.) and require approval"
+        },
+        "aiSupervisor.admin.blockSeverity": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "default": "high",
+          "description": "Block operations at or above this severity level"
+        },
+        "aiSupervisor.admin.requireApproval": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"]
+          },
+          "default": ["critical", "high"],
+          "description": "Severity levels that require user approval"
+        },
+        "aiSupervisor.admin.autoApprove": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically approve changes below the block threshold"
+        },
+        "aiSupervisor.admin.autoApproveSeverity": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "default": "low",
+          "description": "Auto-approve changes at or below this severity"
+        },
+        "aiSupervisor.admin.autoApproveExtensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "File extensions to auto-approve (e.g., ['md', 'txt'])"
+        },
+        "aiSupervisor.admin.alertLargeChanges": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show alerts for large code changes (possible AI generation)"
+        },
+        "aiSupervisor.admin.commandApprovalMode": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "manual"
+          ],
+          "default": "manual",
+          "description": "How to handle AI command approvals"
+        },
+        "aiSupervisor.admin.autoApproveCommands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Command IDs that are auto-approved"
         }
       }
     },
@@ -406,6 +601,35 @@
           "command": "aiSupervisor.openSettings",
           "when": "view =~ /^aiSupervisor\\./",
           "group": "navigation"
+        },
+        {
+          "command": "aiSupervisor.refreshLockedFiles",
+          "when": "view == aiSupervisor.lockedFilesView",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "aiSupervisor.unlockFileFromTree",
+          "when": "view == aiSupervisor.lockedFilesView && viewItem == lockedFile",
+          "group": "inline"
+        },
+        {
+          "command": "aiSupervisor.viewLockedFileReason",
+          "when": "view == aiSupervisor.lockedFilesView && viewItem == lockedFile",
+          "group": "1_actions"
+        },
+        {
+          "command": "aiSupervisor.unlockFileFromTree",
+          "when": "view == aiSupervisor.lockedFilesView && viewItem == lockedFile",
+          "group": "2_actions"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "aiSupervisor.lockCurrentFile",
+          "when": "editorFocus",
+          "group": "aiSupervisor@1"
         }
       ],
       "commandPalette": [
@@ -418,7 +642,26 @@
           "when": "!aiSupervisor.monitoring.active"
         }
       ]
-    }
+    },
+    "keybindings": [
+      {
+        "command": "aiSupervisor.emergencyStop",
+        "key": "ctrl+shift+alt+s",
+        "mac": "cmd+shift+alt+s",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "aiSupervisor.lockCurrentFile",
+        "key": "ctrl+shift+alt+l",
+        "mac": "cmd+shift+alt+l",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "aiSupervisor.showAdminPanel",
+        "key": "ctrl+shift+alt+a",
+        "mac": "cmd+shift+alt+a"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

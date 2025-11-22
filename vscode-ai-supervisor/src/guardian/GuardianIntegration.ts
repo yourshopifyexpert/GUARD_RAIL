@@ -207,4 +207,41 @@ export class GuardianIntegration {
     getGuardianAnalyzer(): GuardianAnalyzer {
         return this.guardianAnalyzer;
     }
+
+    /**
+     * Quick analysis for file save interception (< 500ms target)
+     * Returns simplified security assessment
+     */
+    async quickAnalyze(document: vscode.TextDocument): Promise<{
+        severity: 'low' | 'medium' | 'high' | 'critical';
+        reasoning: string;
+        confidence: number;
+    }> {
+        // For quick analysis, use heuristics instead of full LLM call
+        const content = document.getText();
+
+        // Check for dangerous patterns
+        const patterns = [
+            { regex: /eval\s*\(/gi, severity: 'critical' as const, msg: 'Use of eval()' },
+            { regex: /exec\s*\(/gi, severity: 'critical' as const, msg: 'Code execution detected' },
+            { regex: /dangerouslySetInnerHTML/gi, severity: 'high' as const, msg: 'XSS risk' },
+            { regex: /process\.env\./gi, severity: 'medium' as const, msg: 'Environment variable access' },
+        ];
+
+        for (const pattern of patterns) {
+            if (pattern.regex.test(content)) {
+                return {
+                    severity: pattern.severity,
+                    reasoning: pattern.msg,
+                    confidence: 85
+                };
+            }
+        }
+
+        return {
+            severity: 'low',
+            reasoning: 'No obvious security issues detected',
+            confidence: 70
+        };
+    }
 }

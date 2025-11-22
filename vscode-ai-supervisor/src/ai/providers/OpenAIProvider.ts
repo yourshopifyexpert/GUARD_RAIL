@@ -4,6 +4,20 @@
 
 import { AIProvider, AIProviderConfig, AIResponse, GuardianAnalysisPrompt, GuardianAnalysisResult } from '../AIProvider';
 
+interface OpenAIResponse {
+    choices: Array<{
+        message: {
+            content: string;
+        };
+    }>;
+    model: string;
+    usage: {
+        prompt_tokens: number;
+        completion_tokens: number;
+        total_tokens: number;
+    };
+}
+
 export class OpenAIProvider extends AIProvider {
     private apiKey: string;
     private endpoint: string;
@@ -45,7 +59,7 @@ export class OpenAIProvider extends AIProvider {
                 throw new Error(`OpenAI API error: ${response.status} - ${error}`);
             }
 
-            const data = await response.json();
+            const data = await response.json() as OpenAIResponse;
 
             return {
                 content: data.choices[0].message.content,

@@ -4,6 +4,19 @@
 
 import { AIProvider, AIProviderConfig, AIResponse, GuardianAnalysisPrompt, GuardianAnalysisResult } from '../AIProvider';
 
+interface GoogleResponse {
+    candidates?: Array<{
+        content: {
+            parts: Array<{ text: string }>;
+        };
+    }>;
+    usageMetadata?: {
+        promptTokenCount?: number;
+        candidatesTokenCount?: number;
+        totalTokenCount?: number;
+    };
+}
+
 export class GoogleProvider extends AIProvider {
     private apiKey: string;
     private endpoint: string;
@@ -52,7 +65,7 @@ export class GoogleProvider extends AIProvider {
                 throw new Error(`Google API error: ${response.status} - ${error}`);
             }
 
-            const data = await response.json();
+            const data = await response.json() as GoogleResponse;
 
             if (!data.candidates || data.candidates.length === 0) {
                 throw new Error('No response from Gemini');

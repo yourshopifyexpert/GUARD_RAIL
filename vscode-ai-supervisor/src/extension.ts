@@ -8,6 +8,12 @@ import { GoalManagerPanel } from './panels/GoalManager';
 import { ChangeInspectorPanel } from './panels/ChangeInspector';
 import { GuardianIntegration } from './guardian/GuardianIntegration';
 import { ProjectGoal } from './guardian/GuardianAnalyzer';
+import { AdminCoordinator } from './admin/AdminCoordinator';
+import { AdminControlPanel } from './admin/AdminControlPanel';
+import { registerLockedFilesTreeView } from './admin/LockedFilesTreeProvider';
+import { StatusBarManager } from './admin/StatusBarManager';
+import { DemoMode } from './admin/DemoMode';
+import { registerTestCommand } from './admin/AdminTestScenarios';
 // import { SupervisorEngine } from 'ai-supervisor';
 
 /**
@@ -21,6 +27,8 @@ export class ExtensionContext {
     public aiDetector: AIDetector | undefined;
     public alertManager: AlertManager | undefined;
     public guardianIntegration: GuardianIntegration | undefined;
+    public adminCoordinator: AdminCoordinator | undefined;
+    public statusBarManager: StatusBarManager | undefined;
     // public supervisorEngine: SupervisorEngine | undefined;
 
     private monitoringActive: boolean = true;
@@ -115,6 +123,21 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             }
         });
 
+        // Initialize admin control system
+        extContext.adminCoordinator = await AdminCoordinator.initialize(
+            context,
+            extContext.guardianIntegration
+        );
+
+        // Initialize status bar manager
+        // extContext.statusBarManager = new StatusBarManager(context);
+
+        // Register locked files tree view
+        // registerLockedFilesTreeView(context);
+
+        // Register test command
+        // registerTestCommand(context);
+
         console.log('Core services initialized successfully');
     } catch (error) {
         console.error('Failed to initialize core services:', error);
@@ -174,7 +197,56 @@ function registerCommands(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('aiSupervisor.viewAnalysisHistory', () => commands.viewAnalysisHistory()),
         vscode.commands.registerCommand('aiSupervisor.checkApiCosts', () => commands.checkApiCosts()),
         vscode.commands.registerCommand('aiSupervisor.testGuardianConnection', () => commands.testGuardianConnection()),
-        vscode.commands.registerCommand('aiSupervisor.viewModelDetection', () => commands.viewModelDetection())
+        vscode.commands.registerCommand('aiSupervisor.viewModelDetection', () => commands.viewModelDetection()),
+        // Admin control commands
+        vscode.commands.registerCommand('aiSupervisor.showAdminPanel', () => {
+            AdminControlPanel.createOrShow(context.extensionUri);
+        }),
+        vscode.commands.registerCommand('aiSupervisor.lockCurrentFile', async () => {
+            const editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                vscode.window.showErrorMessage('No active editor');
+                return;
+            }
+            const reason = await vscode.window.showInputBox({
+                prompt: 'Why are you locking this file?',
+                placeHolder: 'e.g., Critical system file, contains secrets'
+            });
+            if (reason) {
+                const admin = ExtensionContext.getInstance().adminCoordinator;
+                if (admin) {
+                    admin.lockManager.lockFile(editor.document.uri.fsPath, reason, 'user');
+                }
+            }
+        }),
+        vscode.commands.registerCommand('aiSupervisor.emergencyStop', async () => {
+            const admin = ExtensionContext.getInstance().adminCoordinator;
+            if (admin) {
+                admin.executionController.emergencyStop();
+            }
+        }),
+        vscode.commands.registerCommand('aiSupervisor.setEditMode', async () => {
+            const mode = await vscode.window.showQuickPick(
+                ['permissive', 'approval', 'locked'],
+                { placeHolder: 'Select edit mode' }
+            );
+            if (mode) {
+                const admin = ExtensionContext.getInstance().adminCoordinator;
+                if (admin) {
+                    admin.editGuard.setEditMode(mode as any);
+                }
+            }
+        }),
+        vscode.commands.registerCommand('aiSupervisor.viewBlockHistory', async () => {
+            vscode.window.showInformationMessage('Block history feature coming soon!');
+            // TODO: Implement block history view
+        }),
+        vscode.commands.registerCommand('aiSupervisor.runDemo', async () => {
+            vscode.window.showInformationMessage('Demo mode coming soon!');
+            // const statusBar = ExtensionContext.getInstance().statusBarManager;
+            // const demoMode = new DemoMode(context, statusBar);
+            // await demoMode.runDemo();
+        })
     );
 
     console.log('Commands registered successfully');
@@ -244,6 +316,12 @@ export function deactivate(): void {
 
     // Clean up alert manager
     extContext.alertManager?.dispose();
+
+    // Clean up admin coordinator
+    extContext.adminCoordinator?.dispose();
+
+    // Clean up status bar manager
+    // extContext.statusBarManager?.dispose();
 
     // Clean up any active panels
     ActivityMonitorPanel.dispose();

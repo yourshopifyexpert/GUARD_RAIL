@@ -5,6 +5,17 @@
 
 import { AIProvider, AIProviderConfig, AIResponse, GuardianAnalysisPrompt, GuardianAnalysisResult } from '../AIProvider';
 
+interface OllamaResponse {
+    response: string;
+    model: string;
+    prompt_eval_count?: number;
+    eval_count?: number;
+}
+
+interface OllamaListResponse {
+    models?: Array<{ name: string }>;
+}
+
 export class OllamaProvider extends AIProvider {
     private endpoint: string;
 
@@ -40,7 +51,7 @@ export class OllamaProvider extends AIProvider {
                 throw new Error(`Ollama API error: ${response.status} - ${error}`);
             }
 
-            const data = await response.json();
+            const data = await response.json() as OllamaResponse;
 
             return {
                 content: data.response,
@@ -82,11 +93,11 @@ export class OllamaProvider extends AIProvider {
             }
 
             // Check if the model exists
-            const data = await response.json();
-            const modelExists = data.models?.some((m: any) => m.name.includes(this.config.model));
+            const data = await response.json() as OllamaListResponse;
+            const modelExists = data.models?.some((m) => m.name.includes(this.config.model));
 
             if (!modelExists) {
-                console.warn(`Model ${this.config.model} not found in Ollama. Available models:`, data.models?.map((m: any) => m.name));
+                console.warn(`Model ${this.config.model} not found in Ollama. Available models:`, data.models?.map((m) => m.name));
             }
 
             return response.ok;
@@ -109,8 +120,8 @@ export class OllamaProvider extends AIProvider {
                 return [];
             }
 
-            const data = await response.json();
-            return data.models?.map((m: any) => m.name) || [];
+            const data = await response.json() as OllamaListResponse;
+            return data.models?.map((m) => m.name) || [];
         } catch (error) {
             console.error('Failed to list Ollama models:', error);
             return [];

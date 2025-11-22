@@ -243,7 +243,7 @@ Respond in JSON format:
             throw new Error(`OpenAI API error: ${response.statusText}`);
         }
 
-        const data = await response.json();
+        const data = await response.json() as { choices: Array<{ message: { content: string } }> };
         return data.choices[0].message.content;
     }
 
@@ -270,7 +270,7 @@ Respond in JSON format:
             throw new Error(`Anthropic API error: ${response.statusText}`);
         }
 
-        const data = await response.json();
+        const data = await response.json() as { content: Array<{ text: string }> };
         return data.content[0].text;
     }
 
@@ -297,7 +297,7 @@ Respond in JSON format:
             throw new Error(`Google API error: ${response.statusText}`);
         }
 
-        const data = await response.json();
+        const data = await response.json() as { candidates: Array<{ content: { parts: Array<{ text: string }> } }> };
         return data.candidates[0].content.parts[0].text;
     }
 
@@ -323,7 +323,7 @@ Respond in JSON format:
             throw new Error(`Ollama error: ${response.statusText}`);
         }
 
-        const data = await response.json();
+        const data = await response.json() as { response: string };
         return data.response;
     }
 

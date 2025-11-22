@@ -4,6 +4,15 @@
 
 import { AIProvider, AIProviderConfig, AIResponse, GuardianAnalysisPrompt, GuardianAnalysisResult } from '../AIProvider';
 
+interface AnthropicResponse {
+    content: Array<{ text: string }>;
+    model: string;
+    usage: {
+        input_tokens: number;
+        output_tokens: number;
+    };
+}
+
 export class AnthropicProvider extends AIProvider {
     private apiKey: string;
     private endpoint: string;
@@ -48,7 +57,7 @@ export class AnthropicProvider extends AIProvider {
                 throw new Error(`Anthropic API error: ${response.status} - ${error}`);
             }
 
-            const data = await response.json();
+            const data = await response.json() as AnthropicResponse;
 
             return {
                 content: data.content[0].text,
