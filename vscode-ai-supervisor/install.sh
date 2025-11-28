@@ -12,26 +12,40 @@ echo ""
 # Navigate to extension directory
 cd "$(dirname "$0")"
 
-# Check if we're in the right directory
-if [ ! -f "package.json" ]; then
-    echo "❌ Error: package.json not found. Are you in the right directory?"
-    exit 1
+# Run readiness check first
+if [ -f "./check-ready.sh" ]; then
+    echo "Running readiness check..."
+    echo ""
+    ./check-ready.sh
+
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo "❌ Readiness check failed. Please fix errors and try again."
+        exit 1
+    fi
+    echo ""
+else
+    # Fallback if check-ready.sh doesn't exist
+    if [ ! -f "package.json" ]; then
+        echo "❌ Error: package.json not found. Are you in the right directory?"
+        exit 1
+    fi
+
+    echo "📦 Installing dependencies..."
+    npm install
+
+    echo ""
+    echo "🔨 Compiling TypeScript..."
+    npm run compile
+
+    if [ $? -ne 0 ]; then
+        echo "❌ Compilation failed! Please fix TypeScript errors first."
+        exit 1
+    fi
+
+    echo ""
+    echo "✅ Compilation successful! (0 errors)"
 fi
-
-echo "📦 Step 1: Installing dependencies..."
-npm install
-
-echo ""
-echo "🔨 Step 2: Compiling TypeScript..."
-npm run compile
-
-if [ $? -ne 0 ]; then
-    echo "❌ Compilation failed! Please fix TypeScript errors first."
-    exit 1
-fi
-
-echo ""
-echo "✅ Compilation successful! (0 errors)"
 echo ""
 echo "Choose installation method:"
 echo ""

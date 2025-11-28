@@ -22,7 +22,6 @@
     "cursor",
     "code-quality"
   ],
-  "icon": "assets/icon.png",
   "galleryBanner": {
     "color": "#1e1e1e",
     "theme": "dark"
@@ -527,9 +526,17 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["low", "medium", "high", "critical"]
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
           },
-          "default": ["critical", "high"],
+          "default": [
+            "critical",
+            "high"
+          ],
           "description": "Severity levels that require user approval"
         },
         "aiSupervisor.admin.autoApprove": {
@@ -692,14 +699,14 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.3",
+    "@google/generative-ai": "^0.17.2",
     "@guard-rail/ai-supervisor": "file:../ai-supervisor",
+    "@iarna/toml": "^2.2.5",
+    "ollama": "^0.5.18",
+    "openai": "^4.104.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "uuid": "^10.0.0",
-    "@anthropic-ai/sdk": "^0.27.0",
-    "openai": "^4.58.0",
-    "@google/generative-ai": "^0.17.0",
-    "ollama": "^0.5.0",
-    "@iarna/toml": "^2.2.5"
+    "uuid": "^10.0.0"
   }
 }
